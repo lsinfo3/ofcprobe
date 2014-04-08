@@ -244,6 +244,7 @@ public class OFSwitchRunner implements Runnable{
 				break;
 			}
 			packetOutQueueEmpty = true;
+			
 			for (IOFConnection ofSwitch : this.switches) {
 				if (!outQueue(ofSwitch)) {
 					packetOutQueueEmpty = false;
@@ -263,6 +264,7 @@ public class OFSwitchRunner implements Runnable{
 	private boolean outQueue(IOFConnection ofSwitch) {
 		boolean packetOutQueueEmpty;
 		if (ofSwitch.hasPacketInQueued()){
+			
 			packetOutQueueEmpty = false;
 			ofSwitch.sendPacketIn();
 		} else {

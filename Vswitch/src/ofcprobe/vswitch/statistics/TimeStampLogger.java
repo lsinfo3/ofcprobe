@@ -139,7 +139,7 @@ public class TimeStampLogger implements IStatistics {
 					iat_mean = 0;
 				}
 				int intervall = Util.getIntervall(this.startDate, now);
-				Util.listSizeCheck(this.incomingMeanIATperIntervall, intervall);
+//				Util.listSizeCheck(this.incomingMeanIATperIntervall, intervall);
 				this.incomingMeanIATperIntervall.add(intervall, iat_mean);
 				logger.trace("[Switch#{}]: New Incoming IAT Intervall Mean: {}", this.dpid, iat_mean);
 				this.incomingTemp.clear();
@@ -176,7 +176,7 @@ public class TimeStampLogger implements IStatistics {
 					iat_mean = 0;
 				}
 				int intervall = Util.getIntervall(this.startDate, now);
-				Util.listSizeCheck(this.outgoingMeanIATperIntervall, intervall);
+//				Util.listSizeCheck(this.outgoingMeanIATperIntervall, intervall);
 				this.outgoingMeanIATperIntervall.add(intervall, iat_mean);
 				logger.trace("[Switch#{}]: New Outgoing IAT Intervall Mean: {}",this.dpid, iat_mean);
 				this.outgoingTemp.clear();
@@ -196,6 +196,9 @@ public class TimeStampLogger implements IStatistics {
 
 	@Override
 	public void evaluate() {
+		synchronized (this.outgoingTemp) {
+			
+		
 		if (!this.outgoingTemp.isEmpty()) {
 			
 			Iterator<Long> iter = this.outgoingTemp.iterator();
@@ -250,7 +253,7 @@ public class TimeStampLogger implements IStatistics {
 			totalOutgoingIatMean = 0.0;
 		}
 		logger.info("[Switch#{}]: Total Outgoing IAT Mean: {}", this.dpid, totalOutgoingIatMean);
-		
+		}
 	}
 
 	@Override

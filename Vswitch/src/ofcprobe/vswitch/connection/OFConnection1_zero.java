@@ -457,6 +457,7 @@ public class OFConnection1_zero implements IOFConnection {
 		if (this.sendFlag && !this.crashed) {
 			try {
 				if (!out.getType().equals(OFType.PACKET_IN))
+//				if (this.dpidString.equals("001"))
 					logger.trace("[Switch#{}]: Outgoing: {}", this.dpidString, out.toString());
 				this.ofStream.write(out);
 				while (this.ofStream.needsFlush()) {
@@ -503,10 +504,11 @@ public class OFConnection1_zero implements IOFConnection {
 			this.runner.endSession(); // Tryin to get at least some data out of this 
 			this.runner.evaluate();
 			this.runner.report();
+			this.crashed = true;
 			logger.error("[Switch#{}]: "  + Throwables.getStackTraceAsString(e), this.dpidString);
 			logger.error("[Switch#{}]: Connection has been closed by Remotehost - Has Controller Crashed?", this.dpidString);
 			logger.error("[Switch#{}]: Exiting ...", this.dpidString);
-			System.exit(1);
+//			System.exit(1);
 		}
 		}
 	}
@@ -518,8 +520,9 @@ public class OFConnection1_zero implements IOFConnection {
 	private void receive(OFMessage incoming) {
 		packetIn(incoming);
 		
-		logger.trace("[Switch#{}]: Incoming Packet: {}", this.dpidString, incoming.toString());
-		
+//		logger.info("[Switch#{}]: Incoming Packet: {}", this.dpidString, incoming.toString());
+//		logger.info("[Switch#{}]: Flow Table size: {}", this.dpidString, this.flowmod_handler.getFlowTable().size());
+	
 		// Create Reply depending on incoming Message
 		// Don't forget to setXid = incoming.getXid()
 		switch (incoming.getType()) {
@@ -547,6 +550,7 @@ public class OFConnection1_zero implements IOFConnection {
 			send(this.feat_reply);
 			break;
 		case FLOW_MOD:
+			
 			OFFlowMod flow_mod = (OFFlowMod) incoming;
 			List<OFMessage> replies = this.flowmod_handler.handleOFFlowMod(flow_mod);
 			for (OFMessage msg: replies) {
@@ -585,13 +589,14 @@ public class OFConnection1_zero implements IOFConnection {
 				long connectedOfSwitch = this.topology.getConnectedOfSwitch( this.dpid, localPort);
 				IOFConnection ofSwitch = this.runner.getMain().getIOFConByDpid(connectedOfSwitch);
 					
-				if (ofSwitch != null) {
+				if (ofSwitch != null) {				
 					ofSwitch.queuePacketIn(packet_out.getPacketData(), this.topology.getInPort(connectedOfSwitch, this.dpid), false);
 				}
 			}
 			BufferID buffID = new BufferID(packet_out.getBufferId());
+			
 			if (this.savedBuffIds.contains(buffID)) {
-				handleBuffid(buffID, packet_out.getInPort());
+				handleBuffid(buffID, packet_out);
 			}
 			this.buffer.freeBuffer(packet_out.getBufferId());
 			break;
@@ -630,26 +635,44 @@ public class OFConnection1_zero implements IOFConnection {
 	 * @param buffId the buffid of the packet
 	 * @param in_port port# 
 	 */
-	private void handleBuffid(BufferID buffId, short in_port) {
+	private void handleBuffid(BufferID buffId, OFPacketOut packet_out) {
 		
+		short in_port = packet_out.getInPort();
+		ArrayList<Short> outports = new ArrayList<>();
+		for (OFAction action: packet_out.getActions()) {
+			if (action.getType().equals(OFActionType.OUTPUT)) {
+				outports.add(((OFActionOutput) action).getPort());
+			}
+		}
 		byte[] payload = this.savedPayloads.remove(buffId);
 		this.savedBuffIds.remove(buffId);
 		if (isArp(payload)) {
 			logger.trace("[Switch#{}]: ARP Detected", this.dpidString);
 			if (!isArp4me(payload, buffId)) {
-				logger.trace("[Switch#{}]: ARP is not 4 me", this.dpidString);
+//				logger.info("[Switch#{}]: ARP is not 4 me", this.dpidString);
 				
-				List<Long> targetSwitches = this.topology.getConnectedOfSwitches(this.dpid);
+//				List<Long> targetSwitches = this.topology.getConnectedOfSwitches(this.dpid);
+				List<Long> targetSwitches = new ArrayList<Long>();
+//				logger.info(""+this.dpid+" "+in_port);
+//				logger.info(""+targetSwitches);
+//				logger.info(""+sourceSwitch);
+//				logger.info("[Switch#{}]: targetSwitches: {}" + (sourceSwitch==null), this.dpidString, targetSwitches.size());
+				for (short outport : outports) {
+					if (outport==OFPort.OFPP_FLOOD.getValue()) {
+						targetSwitches = this.topology.getConnectedOfSwitches(this.dpid);
+						break;
+					}
+					targetSwitches.add(this.topology.getConnectedOfSwitch(this.dpid, outport));
+				}
 				Long sourceSwitch = this.topology.getConnectedOfSwitch(this.dpid, in_port);
-
 				targetSwitches.remove(sourceSwitch);
-				
+//				logger.info("[Switch#{}]: targetSwitches: {}", this.dpidString, targetSwitches.size());
 				if (targetSwitches.size() > 0) {
 					for (long dpid : targetSwitches) {
 						IOFConnection ofSwitch = this.runner.getMain().getIOFConByDpid(dpid);
 						short port = this.topology.getInPort(ofSwitch.getDpid(), this.dpid);
 						if (ofSwitch != null) {
-							logger.trace("[Switch#{}]: Switch#{} has now ARP queued on Port#{}", this.dpidString, ofSwitch.getDpid(), port);
+//							logger.info("[Switch#{}]: Switch#{} has now ARP queued on Port#{}", this.dpidString, ofSwitch.getDpid(), port);
 							ofSwitch.queuePacketIn(payload, port, true);
 						}
 					}
@@ -662,19 +685,30 @@ public class OFConnection1_zero implements IOFConnection {
 		if (isTCPSyn(payload)) {
 			logger.trace("[Switch#{}]: TCPSyN Detected", this.dpidString);
 			if (!isTCPSyN4me(payload, buffId)) {
-				logger.trace("[Switch#{}]: TCPSyN is not 4 me", this.dpidString);
+//				logger.info("[Switch#{}]: TCPSyN is not 4 me", this.dpidString);
 				
-				List<Long> targetSwitches = this.topology.getConnectedOfSwitches(this.dpid);
+//				List<Long> targetSwitches = this.topology.getConnectedOfSwitches(this.dpid);
+				List<Long> targetSwitches = new ArrayList<Long>();
+//				logger.info(""+this.dpid+" "+in_port);
+//				logger.info(""+targetSwitches);
+//				logger.info(""+sourceSwitch);
+//				logger.info("[Switch#{}]: targetSwitches: {}" + (sourceSwitch==null), this.dpidString, targetSwitches.size());
+				for (short outport : outports) {
+					if (outport==OFPort.OFPP_FLOOD.getValue()) {
+						targetSwitches = this.topology.getConnectedOfSwitches(this.dpid);
+						break;
+					}
+					targetSwitches.add(this.topology.getConnectedOfSwitch(this.dpid, outport));
+				}
 				Long sourceSwitch = this.topology.getConnectedOfSwitch(this.dpid, in_port);
-
 				targetSwitches.remove(sourceSwitch);
-				
+//				logger.info("[Switch#{}]: targetSwitches: {}", this.dpidString, targetSwitches.size());
 				if (targetSwitches.size() > 0) {
 					for (long dpid : targetSwitches) {
 						IOFConnection ofSwitch = this.runner.getMain().getIOFConByDpid(dpid);
 						short port = this.topology.getInPort(ofSwitch.getDpid(), this.dpid);
 						if (ofSwitch != null) {
-							logger.trace("[Switch#{}]: Switch#{} has now TCPSyN queued on Port#{}", this.dpidString, ofSwitch.getDpid(), port);
+//							logger.info("[Switch#{}]: Switch#{} has now TCPSyN queued on Port#{}", this.dpidString, ofSwitch.getDpid(), port);
 							ofSwitch.queuePacketIn(payload, port, true);
 						}
 					}
@@ -735,7 +769,8 @@ public class OFConnection1_zero implements IOFConnection {
 		logger.debug("[Switch#{}]: ARP DST-IP: {}", this.dpidString, dstIPString);
 		Device target = this.config.getTopology().getHostMapping().getDeviceToIp(dstIPString);
 		if (target != null) {
-			logger.debug("[Switch#{}]: Arp Target: {}", this.dpidString, target.toString());
+			
+			logger.debug("[Switch#{}]: Arp Target: {} "+this.config.getTopology().getHostMapping().getMacToDevice(target), this.dpidString, target.toString());
 			if (target.getOfSwitch().equals(this)) {
 				if (this.feat_reply.getPortMap().keySet().contains(target.getPort())){
 					byte[] arpReply = arpReplyBuilder(packet);
@@ -763,7 +798,7 @@ public class OFConnection1_zero implements IOFConnection {
 		logger.debug("[Switch#{}]: TCPSyN DST-IP: {}", this.dpidString, dstIPString);
 		Device target = this.config.getTopology().getHostMapping().getDeviceToIp(dstIPString);
 		if (target != null) {
-			logger.debug("[Switch#{}]: TCPSyN Target: {}", this.dpidString, target.toString());
+			logger.debug("[Switch#{}]: TCPSyN Target: {} "+this.config.getTopology().getHostMapping().getMacToDevice(target), this.dpidString, target.toString());
 			if (target.getOfSwitch().equals(this)) {
 				if (this.feat_reply.getPortMap().keySet().contains(target.getPort())){
 					byte[] TCPSyNReply = TCPSyNaCKBuilder(packet);
@@ -833,8 +868,10 @@ public class OFConnection1_zero implements IOFConnection {
 	 */
 	private boolean isLLDP(OFPacketOut po) {
 		
+		
 		short ofp_none = OFPort.OFPP_NONE.getValue();
 		
+//		logger.info("[Switch#{}]: Checking for LLDP! " + ofp_none + " " + po.getInPort(), this.dpidString);
 		// PO.InPort Check
 		if (po.getInPort() != ofp_none) {
 			return false;
@@ -890,7 +927,7 @@ public class OFConnection1_zero implements IOFConnection {
 			return false;
 		}
 		
-		logger.trace("[Switch#{}]: OFPacketOut is LLDP!", this.dpidString);
+		logger.info("[Switch#{}]: OFPacketOut is LLDP!", this.dpidString);
 		return true;
 	}
 
@@ -1010,7 +1047,7 @@ public class OFConnection1_zero implements IOFConnection {
 			newOFPacketIn.setReason(OFPacketInReason.NO_MATCH);
 //			newOFPacketIn.setInPort((short) 2);
 			
-			
+//			logger.info("list size: " + incomingListSwitchRunner.size());
 			if (this.batchSending) {
 				// Sending imminent -> change channel to Write
 				this.socket.keyFor(this.runner.getSelector()).interestOps(SelectionKey.OP_WRITE);

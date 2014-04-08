@@ -4,6 +4,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
 
@@ -16,13 +18,17 @@ import org.jdom2.input.SAXBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
+
 public class GraphmlParser {
 	
 	private static final Logger logger = LoggerFactory.getLogger(GraphmlParser.class);
 	
-	private List<Node> nodelist= new ArrayList<Node>();
+	private ArrayList<Node> nodelist= new ArrayList<Node>();
 	
-	private List<Edge> edgelist= new ArrayList<Edge>();
+	private ArrayList<Edge> edgelist= new ArrayList<Edge>();
+	
+	private int[] edgesST;
 	
 //	private String graphml_filename;
 		
@@ -36,6 +42,7 @@ public class GraphmlParser {
 	private String longitude_key="";
 	private String label_key="";
 	private String linklabel_key="";
+	private String internal_key="";
 
 	public GraphmlParser(String graphml_filename) {
 //		this.graphml_filename = graphml_filename;
@@ -55,6 +62,10 @@ public class GraphmlParser {
 					break;
 				case "Country":
 					country_key=e.getAttributeValue("id");
+					
+					break;
+				case "Internal":
+					internal_key=e.getAttributeValue("id");
 					
 					break;
 				case "id":
@@ -96,35 +107,83 @@ public class GraphmlParser {
 		return null;
 	}
 	
+	private Node findNodeByCoords(ArrayList<Node> list, double longitude, double latitude) {
+		for (Node node : list) {
+			if (Math.abs(node.getLongitude()-longitude)<0.1 && Math.abs(node.getLatitude()-latitude)<0.1)
+				return node;
+		}
+		return null;
+	}
+	
+	private Edge findEdge(ArrayList<Edge> list, Node sourcenode, Node targetnode) {
+		for (Edge edge: list) {
+			if ((edge.getSource().equals(sourcenode) && edge.getTarget().equals(targetnode))
+					|| (edge.getSource().equals(targetnode) && edge.getTarget().equals(sourcenode)))
+				return edge;
+		}
+		return null;
+	}
+	
+	private Edge findEdge(ArrayList<Edge> list, int source, int  target) {
+		for (Edge edge: list) {
+			if ((edge.getSource().getNumber() == source && edge.getTarget().getNumber() == target)
+					|| (edge.getSource().getNumber() == target && edge.getTarget().getNumber() == source))
+				return edge;
+		}
+		return null;
+	}
+	
 	public void readNodes() {
 		
 		//			Element node = graph.getChild("node",ns);
 					List<Element> nodeelemlist = this.graph.getChildren("node", this.ns);
+					int number = 1;
 					for (Element e : nodeelemlist) {
-						Element country_elem = findElementById(e.getChildren(), country_key);
-						String country = country_elem.getText();
+						
+//						Element internel_elem = findElementById(e.getChildren(), internal_key);
+//						System.out.println(internel_elem.getText());
+//						if (internel_elem != null && internel_elem.getText().equals("0")) {
+//							internal_nodes++;
+//							continue;
+//						}
+						Element latitude_elem = findElementById(e.getChildren(), latitude_key);
+						double latitude = (latitude_elem == null) ? 0 : Double.parseDouble(latitude_elem.getText());
+//						System.out.println(latitude);
+						
+						Element longitude_elem = findElementById(e.getChildren(), longitude_key);
+						double longitude = (longitude_elem == null) ? 0 : Double.parseDouble(longitude_elem.getText());
+//						System.out.println(longitude);
+						
+						if(latitude == 0 || longitude == 0)
+							continue;
+						
+						Element country_elem = findElementById(e.getChildren(), country_key);						
+						String country = (country_elem == null) ? "" : country_elem.getText();						
 //						System.out.println(country);
 						
 						
 						Element city_elem = findElementById(e.getChildren(), label_key);
-						String city = city_elem.getText();
+						String city = (city_elem == null) ? "" : city_elem.getText();
 //						System.out.println(city);
 						
-						Element latitude_elem = findElementById(e.getChildren(), latitude_key);
-						double latitude = Double.parseDouble(latitude_elem.getText());
-//						System.out.println(latitude);
-						
-						Element longitude_elem = findElementById(e.getChildren(), longitude_key);
-						double longitude = Double.parseDouble(longitude_elem.getText());
-//						System.out.println(longitude);
 						
 						Element id_elem = findElementById(e.getChildren(), id_key);
 						int id = Integer.parseInt(id_elem.getText());
-						id++;
 //						System.out.println(id);
 						
-						Node node = new Node(city, id, country, longitude, latitude);
-						nodelist.add(node);
+						Node n = findNodeByCoords(nodelist, longitude, latitude);
+						if (n != null) {
+							n.addId(id);
+//							for (int i : n.getIds()) {
+//								System.out.println(i);
+//							}
+						} else {
+							Node node = new Node(number, city, id, country, longitude, latitude);
+							nodelist.add(node);
+							number++;							
+						}
+							
+						
 					}
 	}
 	
@@ -137,12 +196,10 @@ public class GraphmlParser {
 		for (Element e : edgeelemlist) {
 			Attribute source_attr=e.getAttribute("source");
 			int source = Integer.parseInt(source_attr.getValue());
-			source++;
 //			System.out.println(source);
 			
 			Attribute target_attr=e.getAttribute("target");
 			int target = Integer.parseInt(target_attr.getValue());
-			target++;
 //			System.out.println(target);
 			
 			Element linkspeed_elem = findElementById(e.getChildren(), linklabel_key);
@@ -169,23 +226,111 @@ public class GraphmlParser {
 	        Node sourcenode = null;
 	        Node targetnode = null;
 	        for (Node n : this.nodelist) {
-	        	if (n.getId()==source) {
+	        	if (n.getIds().contains(source)) {
 	        		sourcenode = n;
 	        	}
-	        	if (n.getId()==target) {
+	        	if (n.getIds().contains(target)) {
 	        		targetnode = n;
 	        	}
 	        }
-	        
+	        if (sourcenode == null || targetnode == null || sourcenode == targetnode 
+	        		|| findEdge(edgelist, sourcenode, targetnode) != null) {
+//	        	System.out.println("node == null " + source + " " + target);
+	        	continue;
+	        }
 			Edge edge = new Edge(sourcenode,targetnode,linkspeed);
 			this.edgelist.add(edge);
 		}
 	}
 	
+	public int Dijkstra(Node startnode) {
+		int[] distance = new int[nodelist.size()];
+		int[] predecessor = new int[nodelist.size()];
+		ArrayList<Node> q = new ArrayList<Node>();
+		initializeDijkstra(startnode, distance, predecessor, q);
+//		System.out.println(q.size());
+		while(!q.isEmpty()) {
+			Node u = q.get(0);
+			for (Node node : q) {
+				if (distance[node.getNumber()-1]<distance[u.getNumber()-1])
+					u=node;
+			}
+			q.remove(u);
+			for(Edge e : edgelist) {
+				
+				if(e.getSource().getNumber()==u.getNumber() ) {
+					Node v=e.getTarget();
+					if(q.contains(v))
+						 distance_update(u,v,distance, predecessor);
+				} else if (e.getTarget().getNumber()==u.getNumber()) {
+					Node v=e.getSource();
+					if(q.contains(v))
+						 distance_update(u,v,distance, predecessor);;
+				}
+					
+			}
+		}
+		int maxD = distance[0];
+		for (int i = 0; i < distance.length; i++) {
+//			System.out.print((i+1) +":"+ distance[i] +",");
+			if (distance[i] > maxD) {
+				maxD = distance[i];
+			}
+		}
+//		System.out.println();
+//		for (int i = 0; i < predecessor.length; i++) {
+//			System.out.print((i+1) +":"+ predecessor[i] +",");
+//		}
+//		System.out.println();
+		edgesST = Arrays.copyOf(predecessor,predecessor.length);
+		return maxD;
+	}
+	
+	private void distance_update(Node u, Node v, int[] distance,
+			int[] predecessor) {
+		int alt = distance[u.getNumber()-1] + 1;
+		if (alt < distance[v.getNumber()-1]) {
+			distance[v.getNumber()-1] = alt;
+			predecessor[v.getNumber()-1] = u.getNumber();
+		}
+		
+	}
+
+	private void initializeDijkstra(Node startnode, int[] distance, int[] predecessor, ArrayList<Node> q) {
+		for (Node node : nodelist) {
+			distance[node.getNumber()-1]=Integer.MAX_VALUE;
+			predecessor[node.getNumber()-1]=-1;
+			q.add(node);
+		}
+		distance[startnode.getNumber()-1]=0;
+	}
+
 	public void writeToTopologyFile() {
 		if (nodelist.size() == 0 || edgelist.size() == 0){
 			logger.error("No nodes or edges provided.");
 			System.exit(-1);
+		}
+		int distance = Integer.MAX_VALUE;
+		Node startnode = null;
+		for (Node node : nodelist) {
+//			System.out.println("Node: " + node.getNumber() + " maxD: " + Dijkstra(node));
+			if (Dijkstra(node)<distance) {
+				distance = Dijkstra(node);
+				startnode = node;
+			}
+		}
+		Dijkstra(startnode);
+//		System.out.println("Startnode: " + startnode.getName());
+		Iterator<Edge> iter = edgelist.iterator();
+		
+		while (iter.hasNext()) {			
+			Edge edge = iter.next();
+//			System.out.println("Edge: " + edge.getSource().getName() + " - " + edge.getTarget().getName());
+			if ((edge.getTarget().getNumber()==edgesST[edge.getSource().getNumber()-1])
+					|| (edge.getSource().getNumber()==edgesST[edge.getTarget().getNumber()-1]))
+					continue;
+//			System.out.println("Edge removed");
+			iter.remove();
 		}
 		int[] ports = new int[nodelist.size()];
 		for (int i=0; i<ports.length; i++) {
@@ -204,11 +349,15 @@ public class GraphmlParser {
 			for (Edge edge : edgelist) {
 //				System.out.println(edge.getSource().getName()+ " " + edge.getSource().getId() + ":" + (ports[edge.getSource().getId()]++) + "==" + 
 //						edge.getTarget().getName() + " " + edge.getTarget().getId() + ":" + (ports[edge.getTarget().getId()]++));
-				fw.write(edge.getSource().getId() + ":" + (ports[edge.getSource().getId()-1]++) + "==" + 
-						  edge.getTarget().getId() + ":" + (ports[edge.getTarget().getId()-1]++));
+				fw.write(edge.getSource().getNumber() + ":" + (ports[edge.getSource().getNumber()-1]++) + "==" + 
+						  edge.getTarget().getNumber() + ":" + (ports[edge.getTarget().getNumber()-1]++));
 				fw.append( System.getProperty("line.separator") ); 
 			}
+			for (int i=0; i<nodelist.size(); i++) {
+				logger.info("Switch: " + nodelist.get(i).getName()+" "+ nodelist.get(i).getIds() + " " + nodelist.get(i).getNumber() + " Conntections: " + (ports[i]-1));
+			}
 		}
+		
 		catch ( IOException e ) {
 			logger.error( "Exception during Creation of topology file" );
 		}
@@ -217,8 +366,13 @@ public class GraphmlParser {
 				try { 
 					fw.close();
 					logger.info("Writing Topology-File successful!");
+//					System.exit(0);
 				} 
 			catch ( IOException e ) { e.printStackTrace(); }
 		}
+	}
+	
+	public int getNodeCount() {
+		return nodelist.size();
 	}
 }

@@ -93,7 +93,7 @@ public class OFFlowTable {
 	 * @param tableEntry the TableEntries
 	 */
 	public void insert(OFMatch match, OFFlowTableEntry tableEntry) {
-//		logger.trace("[Switch#{}]: insert({}, {})", this.dpid, match, tableEntry);
+//		logger.info("[Switch#{}]: insert({}, {})", this.dpid, match, tableEntry);
 		
 		OFMatsch matsch = new OFMatsch(match);
 //		if (this.flow_table.containsKey(matsch)) {
@@ -193,7 +193,8 @@ public class OFFlowTable {
 				}
 			}
 		}
-//		logger.trace("[Switch#{}]: removeMatchingFlows-Result: {} - Output: {}", this.dpid, this.flow_table.toString(), output.toString());
+//		logger.info("[Switch#{}]: removeMatchingFlows-Result: {} - Output: {}", this.dpid, this.flow_table.toString(), output.toString());
+//		logger.info("[Switch#{}]:  Output: {}", this.dpid,  output.size());
 		return output;
 
 	}

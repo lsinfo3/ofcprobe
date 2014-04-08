@@ -264,14 +264,14 @@ public class Util {
 
 				return false;
 		}
-		// l3
-		if (matchOne.getNetworkDestinationMaskLen() > 0
+		// l3                                                      
+		if (matchOne.getNetworkDestinationMaskLen() > 0          
 				&& matchTwo.getNetworkDestinationMaskLen() > 0) {
-
-			if (matchOne.getNetworkDestination() != matchTwo
-					.getNetworkDestination())
-
-				return false;
+                                                                 
+			if (matchOne.getNetworkDestination() != matchTwo       
+					.getNetworkDestination())                      
+                                                                   
+				return false;                                      
 		}
 		if (matchOne.getNetworkSourceMaskLen() > 0
 				&& matchTwo.getNetworkSourceMaskLen() > 0) {
@@ -347,8 +347,11 @@ public class Util {
   	    }
   	}
    
-	public static void listSizeCheck(List<?> list, int itnervall) {
-		// TODO Auto-generated method stub
+	public static void listSizeCheck(ArrayList<Integer> list, int intervall) {
+		list.ensureCapacity(intervall+1);
+  	    while (list.size() < intervall+1) {
+  	        list.add(0);
+  	    }
 		
 	}
 	

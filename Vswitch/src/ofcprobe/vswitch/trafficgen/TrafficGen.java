@@ -396,7 +396,7 @@ public class TrafficGen implements Runnable {
 								Short port = arp.getPort();
 								byte[] payload = arp.getPayload();
 								ofSwitch.queuePacketIn(payload, port, true);
-								logger.trace("Queued ARP to Switch({})", ofSwitch.toString());
+//								logger.info("Queued ARP to Switch({})", ofSwitch.toString());
 							}
 							// Schedule TCP Syn for this host after the ARPing
 							IOFEvent tcpAfterArp = generateEvent(ofSwitch, EventType.TCP_AFTER_ARP);
@@ -411,7 +411,7 @@ public class TrafficGen implements Runnable {
 								Short port = tcpSyn.getPort();
 								byte[] payload = tcpSyn.getPayload();
 								ofSwitch.queuePacketIn(payload, port, true);
-								logger.trace("Queued TCPSYN after ARP to ofSwitch({})", ofSwitch.toString());
+//								logger.info("Queued TCPSYN after ARP to ofSwitch({})", ofSwitch.toString());
 							}
 							// Only Payloads from Topology 'Devices'
 							if (this.config.getTrafficGenConfig().getOnlyTopoPayloads()) {
@@ -422,6 +422,7 @@ public class TrafficGen implements Runnable {
 							break;
 						case PACKET_IN_EVENT:
 							if (ofRunner != null) {
+								
 								starters.add(ofRunner);
 								// Calculate number of packets to queue in ofSwitch
 								int packetsQueued = event.getCon().packetInQueueLength();

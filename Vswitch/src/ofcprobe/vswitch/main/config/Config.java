@@ -117,11 +117,13 @@ public class Config {
 			this.countSwitches = switchCount;
 		}
 		if (this.hasGraphml && graphml_file != "") {
-			debug.info(graphml_file);
+			debug.info("Topolgy File: {}", graphml_file);
 			this.graphmlparser = new GraphmlParser(graphml_file);		
 			graphmlparser.readNodes();
 			graphmlparser.readEdges();
 			graphmlparser.writeToTopologyFile();
+			this.countSwitches = graphmlparser.getNodeCount();
+			debug.info("Switch Count in current Topology: {}", this.countSwitches);
 		} 
 //		else
 //		{

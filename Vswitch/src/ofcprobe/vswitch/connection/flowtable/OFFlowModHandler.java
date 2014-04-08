@@ -70,6 +70,7 @@ public class OFFlowModHandler {
 		short flags = flow_mod.getFlags();
 		boolean sendFlowRemoved = false;
 		boolean checkOverlap = false;
+		
 		switch (flags) {
 		case OFFlowMod.OFPFF_SEND_FLOW_REM:
 			// Send flow removed message when flow expires or is deleted.
@@ -98,7 +99,6 @@ public class OFFlowModHandler {
 			output.add(wrongActionsError);
 			return output;
 		}
-		
 		switch (flow_mod.getCommand()) {
 		case OFFlowMod.OFPFC_ADD:
 			/* OFPFC_ADD: New flow. */
@@ -114,6 +114,7 @@ public class OFFlowModHandler {
 				}
 			}
 			if (!this.flow_table.isFull()) {
+				
 				this.flow_table.removeMatchingFlows(match, true, sendFlowRemoved);
 				this.flow_table.insert(match, entry);
 			} else {

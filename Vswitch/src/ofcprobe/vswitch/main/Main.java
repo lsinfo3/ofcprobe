@@ -138,7 +138,7 @@ public class Main {
 		int threadsStopped = 0;
 		Date benchinEnd = new Date();
 		Date now = new Date();
-		while(threadsStopped < ThreadCount || now.getTime() - benchinEnd.getTime() < 40000) {
+		while(threadsStopped < ThreadCount || now.getTime() - benchinEnd.getTime() < 10000) {
 			now = new Date();
 			for (OFSwitchRunner ofswitchRunner : switchRunners) {
 				if (now.getTime() - ofswitchRunner.lastPacketInTime() > WAITTIME){
