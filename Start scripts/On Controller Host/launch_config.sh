@@ -50,7 +50,6 @@ fi
 
 runArray=$(seq 5 5 $maxswitchnum)
 runArray=("1" "${runArray[@]}")
-runArray=("${runArray[@]}" "${runArray[@]}")
 
 
 for i in $(seq 1 1 $1)
@@ -91,6 +90,7 @@ do
 	echo ">Moving statistics to statistics_$i"
 	for ip in ${IPS[@]}
 	do
+		ssh openflow@${ip} mkdir "/home/openflow/ofcprobe/statistics_$i/"
 		ssh openflow@${ip}  mv "/home/openflow/ofcprobe/statistics/" "/home/openflow/ofcprobe/statistics_$i/"
 	done
 	
