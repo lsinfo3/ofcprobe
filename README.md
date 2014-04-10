@@ -10,7 +10,7 @@ behavior.
 ## Tutorial
 
 
- ###Requirements:
+###Requirements:
 
 - Java
 - OpenFlow Controller
@@ -44,7 +44,7 @@ behavior.
 ###Simulation Sequence
 
 
- #### Best Effort Testing
+####Best Effort Testing
  
 
 > 1 Host
@@ -123,7 +123,8 @@ On OF Controller Host
 
 1. Ensure that NO controller is running
 2. Start Testing:
-        ./launch_config_top.sh 5 flood_aarnet
+
+         ./launch_config_top.sh 5 flood_aarnet
 
 This will start a topology emulation of the choosen GraphlML file. The nodes and edges are imported and a corresponding topology.ini file is automatically created. After the Simlation has finished, you will find a directory on < OFCProbeDirectory>\flood_aarnet\. 
    All statistics Files are found there. 
