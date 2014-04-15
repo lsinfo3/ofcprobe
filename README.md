@@ -16,7 +16,7 @@ behavior.
 - OpenFlow Controller
 - Preferably a Linux System (Shell Scripts + Screen Usage in Scripts provided)
 - Passwordless SSH-Connection between OF Controller Host and OFCProbe Host for User openflow
-- OFCProbe.zip
+- Download of [OFCProbe](https://github.com/lsinfo3/ofcprobe/releases)
 
 
 ###Preperations On OFCProbe Host
