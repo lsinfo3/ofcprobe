@@ -234,7 +234,7 @@ nb-configuration.xml
 *.class
 
 # Package Files #
-*.jar
+target/*.jar
 *.war
 *.ear
 
