@@ -7,6 +7,13 @@ characteristics. OpenFlow controllers can be pushed to their limit and the bottl
 The tool allows the emulation of virtual switches that each provide sophisticated statistics about the controller 
 behavior.
 
+## Building OFCProbe
+
+- Download and install Maven
+- Execute `mvn package` to download dependencies and compile OFCProbe.
+- The result can be found in `target/ofcprobe-*-jar-with-dependencies.jar`.
+
+
 ## Tutorial
 
 
@@ -16,7 +23,7 @@ behavior.
 - OpenFlow Controller
 - Preferably a Linux System (Shell Scripts + Screen Usage in Scripts provided)
 - Passwordless SSH-Connection between OF Controller Host and OFCProbe Host for User openflow
-- Download of [OFCProbe](https://github.com/lsinfo3/ofcprobe/releases)
+- Build it as described above or download [OFCProbe](https://github.com/lsinfo3/ofcprobe/releases)
 
 
 ###Preperations On OFCProbe Host
@@ -71,11 +78,11 @@ On OFCProbe Host
 1. Use provided config.be.ini (dont forget renaming config file to config.ini)
 2. Do not Forget to Change config.startDpid --> Over all OFCProbeHosts, the DPIDs must not overlap
 3. Example Scenario with 4 Hosts:
-* 100 Switches in Total --> 25 Switches in Total per Host
-* Host1: config.startDpid = 1
-* Host2: config.startDpid = 100
-* Host3: config.startDpid = 200
-* Host4: config.startDpid = 300
+4. * 100 Switches in Total --> 25 Switches in Total per Host
+   * Host1: config.startDpid = 1
+   * Host2: config.startDpid = 100
+   * Host3: config.startDpid = 200
+   * Host4: config.startDpid = 300
 
 On OF Controller Host
 
@@ -93,7 +100,7 @@ On OF Controller Host
 ####One Host - Topology Testing
 On OFCProbe Host
 
-1.  Use provided config.top.ini (dont forget renaming config file to config.ini)
+1. Use provided config.top.ini (dont forget renaming config file to config.ini)
 2. Ensure that topology.ini file is in OFCProbe Directory (This File Emulates a FatTree Topology with 20 Switches)
 
 On OF Controller Host
