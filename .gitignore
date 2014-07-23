@@ -216,3 +216,26 @@ pip-log.txt
 
 # Maven
 target/
+
+#Netbeans
+ 32 down vote
+	
+
+# NetBeans specific #
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+nbactions.xml
+nb-configuration.xml
+
+# Class Files #
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+

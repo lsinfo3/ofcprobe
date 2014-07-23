@@ -11,7 +11,7 @@ behavior.
 
 - Download and install Maven
 - Execute `mvn package` to download dependencies and compile OFCProbe.
-- The result can be found in `target/ofcprobe-*-jar-with-dependencies.jar`.
+- The result can be found in `target/ofcprobe-*-one-jar.jar`.
 
 
 ## Tutorial
@@ -54,11 +54,11 @@ behavior.
 ####Best Effort Testing
  
 
-> 1 Host
+#####1 Host
 
 On OFCProbe Host
 
-1. Use provided config.be.ini (dont forget renaming config file to config.ini)
+1. Use provided config.ini
 
 On OF Controller Host
 
@@ -72,10 +72,10 @@ On OF Controller Host
     After the Simlation has finished, you will find a directory on < OFCProbeDirectory>\flood_be\. 
     All statistics Files are found there.
 
-> Multiple Hosts
+#####Multiple Hosts
 On OFCProbe Host
 
-1. Use provided config.be.ini (dont forget renaming config file to config.ini)
+1. Use provided config.ini
 2. Do not Forget to Change config.startDpid --> Over all OFCProbeHosts, the DPIDs must not overlap
 3. Example Scenario with 4 Hosts:
 4. * 100 Switches in Total --> 25 Switches in Total per Host
