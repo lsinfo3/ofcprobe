@@ -204,7 +204,7 @@ public class PacketsPerSecond implements IStatistics {
 				if (intervall > this.lastIntervallI) {
 					Util.listSizeCheck(this.ppsI, intervall);
 					this.ppsI.add(intervall - 1, this.ppsI.get(intervall -1) + this.packetsI);
-					logger.info("[Switch#{}]: {} incoming Packets in Interval#{}", this.dpid, packetFormatter.format(this.packetsI), intervalFormatter.format(intervall));
+					logger.trace("[Switch#{}]: {} incoming Packets in Interval#{}", this.dpid, packetFormatter.format(this.packetsI), intervalFormatter.format(intervall));
 					this.packetsI = 0;
 					this.lastIntervallI = intervall;
 				}
@@ -229,7 +229,7 @@ public class PacketsPerSecond implements IStatistics {
 		if (intervall > this.lastIntervallO) {
 			Util.listSizeCheck(this.ppsI, intervall);
 			this.ppsO.add(intervall - 1, this.ppsO.get(intervall -1) + this.packetsO);
-			logger.info("[Switch#{}]: {} outgoing Packets in Interval#{}", this.dpid, packetFormatter.format(this.packetsO), intervalFormatter.format(intervall));
+			logger.trace("[Switch#{}]: {} outgoing Packets in Interval#{}", this.dpid, packetFormatter.format(this.packetsO), intervalFormatter.format(intervall));
 			this.packetsO = 0;
 			this.lastIntervallO = intervall;
 		}
