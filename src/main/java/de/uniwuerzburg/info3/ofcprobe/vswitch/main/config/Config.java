@@ -124,6 +124,7 @@ public class Config {
 		// Check for correct filename
 		if (filename.equals("")) {
 			// no filename -> load Default
+                    debug.info("Loading Default Settings");
 			loadDefaults();
 		} else {
 			// correct filename -> load Config from File
@@ -281,51 +282,34 @@ public class Config {
 		// 60,5 sec
 		this.simTime = 1000 * 60 + 500;
 		// 6 sec
-		this.stopDelay = 6000;
+                this.startDelay= 6000;
+		this.stopDelay = 500;
+                this.startDpid = 1;
+                this.threadCount = 1;
+                this.countSwitches=25;
+                this.hasGraphml = false;
 		
 		this.hasTopology = false;
 		this.checkForIndividualSettings = false;
-		// floodlight (vm)
-		//InetSocketAddress contAddress = new InetSocketAddress("192.168.139.132",6633);
-		
-		// floodlight/beacon/nox u12 (nonvm)
-		//InetSocketAddress contAddress = new InetSocketAddress("172.16.41.13",6633);
-		
-		// nox classic (p4)
-		//InetSocketAddress contAddress = new InetSocketAddress("172.16.41.11",6633);
-				
-		// floodlight/beacon/nox u12 (p4)
-		//InetSocketAddress contAddress = new InetSocketAddress("172.16.41.12",6633);
-		
-		// floodlight/beacon (nebelm00)
-		//InetSocketAddress contAddress = new InetSocketAddress("172.16.41.17",6633);
-		
-		//floodlight/nox (core2duo)
-		//InetSocketAddress contAddress = new InetSocketAddress("172.16.41.18",6633);
-		
-		//floodlight/nox (uralte Kiste)
-		InetSocketAddress contAddress = new InetSocketAddress("172.16.41.19",6633);
-		
-		// maestro (vm)
-		//InetSocketAddress contAddress = new InetSocketAddress("192.168.139.130",6633);
-		
-		// noxclassic
-		//InetSocketAddress contAddress = new InetSocketAddress("172.16.41.11",6633);
+		// Localhost
+		InetSocketAddress contAddress = new InetSocketAddress("127.0.0.1",6633);
 		
 		
 		this.runConfig.setStartDpid(1);
 		this.runConfig.setCountSwitches(5);
-//		this.runConfig.setSession(1);
 		
 		
 		this.switchConfig.setContAddress(contAddress);
 		this.switchConfig.setPortCountperSwitch(4);
 		this.switchConfig.setBuffersPerSwitch(256);
-		this.switchConfig.setSession(1);
+		this.switchConfig.setSession(25);
 		this.switchConfig.setDpid(1);
 //		this.switchConfig.setSendFlag(false); // XXX
-//		this.switchConfig.setBatchSending(true);
-		
+		this.switchConfig.setBatchSending(true);
+		this.switchConfig.setDisableNagle(true);
+                this.switchConfig.setFlowTableSize(128);
+                this.switchConfig.setRandomizeStats(true);
+                
 		this.trafficGenConfig.setScenario("TCPSYN");
 		this.trafficGenConfig.setFillThreshold(500);
 		this.trafficGenConfig.setIAT(100);
@@ -333,12 +317,15 @@ public class Config {
 //		this.trafficGenConfig.setStaticPayloadFlag(true);
 		this.trafficGenConfig.setSwitchHasIndividualSetting(false);
 		this.trafficGenConfig.setArpEnabled(false);
+                this.trafficGenConfig.setMACGeneratorType(MACGeneratorType.SERIAL);
+                this.trafficGenConfig.setIPGeneratorType(IPGeneratorType.SERIAL);
+                this.trafficGenConfig.setPortGeneratorType(PortGeneratorType.SERIAL);
+                this.trafficGenConfig.setIatType(0);
+                this.trafficGenConfig.setOnlyTopoPayloads(false);
 		
-		List<String> stats = new ArrayList<String>();
+		List<String> stats = new ArrayList<>();
 		stats.add("PPS");
 		stats.add("RTT");
-		stats.add("CPU");
-		stats.add("RAM");
 		stats.add("TSL");
 		this.statConfig.setStatModules(stats);
 		this.statConfig.setMonitorAddress(contAddress);
