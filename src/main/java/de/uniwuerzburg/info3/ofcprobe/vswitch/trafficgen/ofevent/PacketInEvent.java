@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2014 Christopher Metter
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,35 +18,41 @@ package de.uniwuerzburg.info3.ofcprobe.vswitch.trafficgen.ofevent;
 
 import de.uniwuerzburg.info3.ofcprobe.vswitch.connection.IOFConnection;
 
+/**
+ * Event describing the Generation of an PacketIn
+ *
+ * @author Christopher Metter(christopher.metter@informatik.uni-wuerzburg.de)
+ */
 public class PacketInEvent implements IOFEvent {
-	
-	private EventType type;
-	private IOFConnection ofSwitch;
-	
-	/**
-	 * Constructor
-	 * @param ofSwitch
-	 */
-	public PacketInEvent(IOFConnection ofSwitch){
-		this.ofSwitch = ofSwitch;
-		this.type = EventType.PACKET_IN_EVENT;
-	}
 
-	@Override
-	public IOFConnection getCon(){
-		return this.ofSwitch;
-	}
+    private EventType type;
+    private IOFConnection ofSwitch;
 
-	@Override
-	public EventType getType() {
-		return this.type;
-	}
-	
-	
-	public String toString(){
-		String output = new String();
-		output += "Type:" + this.type + ";Con:"+this.ofSwitch.toString();
-		return output;
-	}
+    /**
+     * Constructor
+     *
+     * @param ofSwitch
+     */
+    public PacketInEvent(IOFConnection ofSwitch) {
+        this.ofSwitch = ofSwitch;
+        this.type = EventType.PACKET_IN_EVENT;
+    }
+
+    @Override
+    public IOFConnection getCon() {
+        return this.ofSwitch;
+    }
+
+    @Override
+    public EventType getType() {
+        return this.type;
+    }
+
+    @Override
+    public String toString() {
+        String output = new String();
+        output += "Type:" + this.type + ";Con:" + this.ofSwitch.toString();
+        return output;
+    }
 
 }

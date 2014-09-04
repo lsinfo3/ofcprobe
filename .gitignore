@@ -240,3 +240,4 @@ target/*.jar
 
 #OFCProbe
 statistics/
+!/src/main/java/de/uniwuerzburg/info3/ofcprobe/vswitch/statistics/

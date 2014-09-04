@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2014 Christopher Metter
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,15 +16,20 @@
  */
 package de.uniwuerzburg.info3.ofcprobe.vswitch.trafficgen.ofevent;
 
+/**
+ * Enum of Possible Events for Trafficgeneratorqueue
+ *
+ * @author Christopher Metter(christopher.metter@informatik.uni-wuerzburg.de)
+ */
 public enum EventType {
-	// Resembles OFPacketIn Message
-	PACKET_IN_EVENT,
-	OFSWITCH_CONNECT_EVENT,
-	OFSWITCH_CONCHECK_EVENT,
-	OFSWITCH_QUEUESWITCH_EVENT,
-	OFSWITCH_DISCONNECT_EVENT,
-	GENERATION_END,
-	ARP_EVENT,
-	TCP_AFTER_ARP
 
+    // Resembles OFPacketIn Message
+    PACKET_IN_EVENT,
+    OFSWITCH_CONNECT_EVENT,
+    OFSWITCH_CONCHECK_EVENT,
+    OFSWITCH_QUEUESWITCH_EVENT,
+    OFSWITCH_DISCONNECT_EVENT,
+    GENERATION_END,
+    ARP_EVENT,
+    TCP_AFTER_ARP
 }

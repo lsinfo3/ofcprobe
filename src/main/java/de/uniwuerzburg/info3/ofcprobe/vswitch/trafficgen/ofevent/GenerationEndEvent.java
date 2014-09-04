@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2014 Christopher Metter
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,30 +18,36 @@ package de.uniwuerzburg.info3.ofcprobe.vswitch.trafficgen.ofevent;
 
 import de.uniwuerzburg.info3.ofcprobe.vswitch.connection.IOFConnection;
 
+/**
+ * Event describing the End of Traffic Generation
+ *
+ * @author Christopher Metter(christopher.metter@informatik.uni-wuerzburg.de)
+ */
 public class GenerationEndEvent implements IOFEvent {
 
-	private EventType type;
-	private IOFConnection ofSwitch;
-	
-	public GenerationEndEvent(IOFConnection ofSwitch){
-		this.ofSwitch = ofSwitch;
-		this.type = EventType.GENERATION_END;
-	}
-	
-	@Override
-	public EventType getType() {
-		return this.type;
-	}
+    private EventType type;
+    private IOFConnection ofSwitch;
 
-	@Override
-	public IOFConnection getCon() {
-		return this.ofSwitch;
-	}
-	
-	public String toString(){
-		String output = new String();
-		output += "Type:" + this.type + ";Con:"+this.ofSwitch.toString();
-		return output;
-	}
+    public GenerationEndEvent(IOFConnection ofSwitch) {
+        this.ofSwitch = ofSwitch;
+        this.type = EventType.GENERATION_END;
+    }
+
+    @Override
+    public EventType getType() {
+        return this.type;
+    }
+
+    @Override
+    public IOFConnection getCon() {
+        return this.ofSwitch;
+    }
+
+    @Override
+    public String toString() {
+        String output = new String();
+        output += "Type:" + this.type + ";Con:" + this.ofSwitch.toString();
+        return output;
+    }
 
 }

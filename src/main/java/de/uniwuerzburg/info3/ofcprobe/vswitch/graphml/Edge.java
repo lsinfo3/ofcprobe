@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2014 Christopher Metter
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,43 +16,46 @@
  */
 package de.uniwuerzburg.info3.ofcprobe.vswitch.graphml;
 
+/**
+ *
+ * @author christian rachor
+ */
 public class Edge {
 
-	private Node source;
-	private Node target;
-	
-	private double linkspeed;
+    private Node source;
+    private Node target;
 
-	public Edge(Node source, Node target, double linkspeed) {
-		super();
-		this.source = source;
-		this.target = target;
-		this.linkspeed = linkspeed;
-	}
+    private double linkspeed;
 
-	public Node getSource() {
-		return source;
-	}
+    public Edge(Node source, Node target, double linkspeed) {
+        super();
+        this.source = source;
+        this.target = target;
+        this.linkspeed = linkspeed;
+    }
 
-	public void setSource(Node source) {
-		this.source = source;
-	}
+    public Node getSource() {
+        return source;
+    }
 
-	public Node getTarget() {
-		return target;
-	}
+    public void setSource(Node source) {
+        this.source = source;
+    }
 
-	public void setTarget(Node target) {
-		this.target = target;
-	}
+    public Node getTarget() {
+        return target;
+    }
 
-	public double getLinkspeed() {
-		return linkspeed;
-	}
+    public void setTarget(Node target) {
+        this.target = target;
+    }
 
-	public void setLinkspeed(double linkspeed) {
-		this.linkspeed = linkspeed;
-	}
-	
-	
+    public double getLinkspeed() {
+        return linkspeed;
+    }
+
+    public void setLinkspeed(double linkspeed) {
+        this.linkspeed = linkspeed;
+    }
+
 }

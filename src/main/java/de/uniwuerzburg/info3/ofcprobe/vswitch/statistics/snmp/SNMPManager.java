@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2014 Christopher Metter
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
  */
 package de.uniwuerzburg.info3.ofcprobe.vswitch.statistics.snmp;
 
-import java.io.IOException; 
+import java.io.IOException;
 import org.snmp4j.CommunityTarget;
 import org.snmp4j.PDU;
 import org.snmp4j.Snmp;
@@ -32,9 +32,8 @@ import org.snmp4j.smi.VariableBinding;
 import org.snmp4j.transport.DefaultUdpTransportMapping;
 
 /**
- * SNMPManager.
- * Stellt eine Request an den gewuenschten Host mit entsprechender OID.
- * Gibt die Response als String wieder.
+ * SNMPManager. Requests provided SNMP OID from Host.
+ *
  * @author Christopher Metter(christopher.metter@informatik.uni-wuerzburg.de)
  *
  */
@@ -44,12 +43,11 @@ public class SNMPManager {
     private String ip = null;
 
     /**
-     * Konstruktor
-     * Standartport fuer SNMP ist 161. Muss angefuegt werden!
-     * @param ip IP des Hosts mit port ip/Port Bsp.: 192.168.0.1/161
+     * Standard Port for SNMP is 161. MUST BE PROVIDED!
+     *
+     * @param ip Host IP with port ip/Port eg.: 192.168.0.1/161
      */
     public SNMPManager(String ip) {
-
         this.ip = ip;
     }
 
@@ -58,32 +56,34 @@ public class SNMPManager {
      */
     public void start() {
         try {
-            // Starten der SNMP Seassion
+            // Start SNMP Seassion
             TransportMapping<?> transport;
             transport = new DefaultUdpTransportMapping();
             this.snmp = new Snmp(transport);
-            // Synchronisation WICHTIG!!!
+            // Synchronisation
             transport.listen();
-        } catch (IOException e) { 
-		    throw new RuntimeException("Can't start SNMPManager!");
-        }		
+        } catch (IOException e) {
+            throw new RuntimeException("Can't start SNMPManager!");
+        }
     }
 
     /**
-     * Liefert die Ausgabe der Abfrage.
+     * Returns the resonponse of the request
+     *
      * @param oid OID.
      * @return Request.
      */
     public String getAsString(OID oid) {
 
         ResponseEvent event;
-        event = get(new OID[] { oid });
+        event = get(new OID[]{oid});
         return event.getResponse().get(0).getVariable().toString();
     }
 
     /**
-     * Fuer mehrere OID's
-     * @param oids OIDS die abgefragt werden sollen.
+     * Request multiple OIDs
+     *
+     * @param oids OIDS
      * @return ResponseEvent
      */
     public ResponseEvent get(OID oids[]) {
@@ -96,7 +96,7 @@ public class SNMPManager {
             pdu.setType(PDU.GET);
             ResponseEvent event;
             event = snmp.send(pdu, getTarget(), null);
-            if(event != null) {
+            if (event != null) {
                 return event;
             }
             throw new RuntimeException("Timeout");
@@ -106,23 +106,22 @@ public class SNMPManager {
     }
 
     /**
-     * Liefert ein Target dass infos enthaelt wie die Daten abgerufen werden.
-     * Momentan wird das SNMP 2 protokoll benutzt!!!
+     * Gets Target which contains information on data request Currently, SNMP 2
+     * protocol 2 is used
+     *
      * @return .
      */
     private Target getTarget() {
 
         Address targetAddress = GenericAddress.parse(this.ip);
         CommunityTarget target = new CommunityTarget();
-        // Community auf die der client zugriff hat
+        // Community the client has access to
         target.setCommunity(new OctetString("public"));
-        // IP Adresse des Hosts.
         target.setAddress(targetAddress);
-        // anzahl der Versuche.
         target.setRetries(1);
-//		 Timeout (5sec)
+//		 Timeout (10sec)
         target.setTimeout(10000);
-        // Protokoll version
+        // Protocol version
         target.setVersion(SnmpConstants.version2c);
         return target;
     }

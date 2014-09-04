@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2014 Christopher Metter
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,39 +19,42 @@ package de.uniwuerzburg.info3.ofcprobe.vswitch.trafficgen.ofevent;
 import de.uniwuerzburg.info3.ofcprobe.vswitch.connection.IOFConnection;
 
 /**
+ * Event describing the generation of ARP Packet(s) for a certain IOFCon
+ *
  * @author Christopher Metter(christopher.metter@informatik.uni-wuerzburg.de)
  *
  */
 public class ARPEvent implements IOFEvent {
 
-	private EventType type;
-	private IOFConnection ofSwitch;
-	
-	public ARPEvent(IOFConnection ofSwitch){
-		this.ofSwitch = ofSwitch;
-		this.type = EventType.ARP_EVENT;
-	}
-	
-	/* (non-Javadoc)
-	 * @see ofcprobe.vswitch.trafficgen.ofevent.IOFEvent#getType()
-	 */
-	@Override
-	public EventType getType() {
-		return this.type;
-	}
+    private EventType type;
+    private IOFConnection ofSwitch;
 
-	/* (non-Javadoc)
-	 * @see ofcprobe.vswitch.trafficgen.ofevent.IOFEvent#getCon()
-	 */
-	@Override
-	public IOFConnection getCon() {
-		return this.ofSwitch;
-	}
-	
-	public String toString(){
-		String output = new String();
-		output += "Type:" + this.type + ";Con:"+this.ofSwitch.toString();
-		return output;
-	}
+    public ARPEvent(IOFConnection ofSwitch) {
+        this.ofSwitch = ofSwitch;
+        this.type = EventType.ARP_EVENT;
+    }
+
+    /* (non-Javadoc)
+     * @see ofcprobe.vswitch.trafficgen.ofevent.IOFEvent#getType()
+     */
+    @Override
+    public EventType getType() {
+        return this.type;
+    }
+
+    /* (non-Javadoc)
+     * @see ofcprobe.vswitch.trafficgen.ofevent.IOFEvent#getCon()
+     */
+    @Override
+    public IOFConnection getCon() {
+        return this.ofSwitch;
+    }
+
+    @Override
+    public String toString() {
+        String output = new String();
+        output += "Type:" + this.type + ";Con:" + this.ofSwitch.toString();
+        return output;
+    }
 
 }

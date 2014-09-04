@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2014 Christopher Metter
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,24 +16,27 @@
  */
 package de.uniwuerzburg.info3.ofcprobe.vswitch.trafficgen.ofevent;
 
-
-
 import de.uniwuerzburg.info3.ofcprobe.vswitch.connection.IOFConnection;
 
+/**
+ * Interface for Events
+ *
+ * @author Christopher Metter(christopher.metter@informatik.uni-wuerzburg.de)
+ */
 public interface IOFEvent {
-	
-	/**
-	 * Returns the EventType
-	 * @return EventType
-	 */
-	public EventType getType();
-	
-	
-	/**
-	 * Returns the IOFConnection of this Event
-	 * @return ofSwitch
-	 */
-	public IOFConnection getCon();
-	
+
+    /**
+     * Returns the EventType
+     *
+     * @return EventType
+     */
+    public EventType getType();
+
+    /**
+     * Returns the IOFConnection of this Event
+     *
+     * @return ofSwitch
+     */
+    public IOFConnection getCon();
 
 }

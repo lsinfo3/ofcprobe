@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2014 Christopher Metter
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,11 +17,13 @@
 package de.uniwuerzburg.info3.ofcprobe.vswitch.trafficgen.portgen;
 
 /**
+ * Currently supported GeneratorTypes
+ *
  * @author Christopher Metter(christopher.metter@informatik.uni-wuerzburg.de)
  *
  */
 public enum PortGeneratorType {
-	SERIAL,
-	RANDOM
 
+    SERIAL,
+    RANDOM
 }

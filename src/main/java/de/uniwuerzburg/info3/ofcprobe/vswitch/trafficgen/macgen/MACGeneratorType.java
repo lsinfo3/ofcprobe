@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2014 Christopher Metter
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,7 +21,7 @@ package de.uniwuerzburg.info3.ofcprobe.vswitch.trafficgen.macgen;
  *
  */
 public enum MACGeneratorType {
-	SERIAL,
-	RANDOM
 
+    SERIAL,
+    RANDOM
 }

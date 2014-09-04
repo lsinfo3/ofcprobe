@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2014 Christopher Metter
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,27 +18,31 @@ package de.uniwuerzburg.info3.ofcprobe.vswitch.trafficgen.portgen;
 
 /**
  * Interface for PortGenerators
+ *
  * @author Christopher Metter(christopher.metter@informatik.uni-wuerzburg.de)
  *
  */
 public interface IPortGen {
-	
-	/**
-	 * Generate a new Port
-	 * @return Port
-	 */
-	public byte[] getPort();
-	
-	/**
-	 * Generate a new Privileged Port.
-	 * @return Port
-	 */
-	public byte[] getPrivilegdedPort();
-	
-	
-	/**
-	 * Gets the Port Generator Type
-	 * @return the Type
-	 */
-	public PortGeneratorType getType();
+
+    /**
+     * Generate a new Port
+     *
+     * @return Port
+     */
+    public byte[] getPort();
+
+    /**
+     * Generate a new Privileged Port. Privileged means that generated Port will
+     * be one of the commonly known ports, e.g. Port 80 for HTTP
+     *
+     * @return Port
+     */
+    public byte[] getPrivilegdedPort();
+
+    /**
+     * Gets the Port Generator Type
+     *
+     * @return the Type
+     */
+    public PortGeneratorType getType();
 }

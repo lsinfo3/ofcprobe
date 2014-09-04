@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2014 Christopher Metter
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,42 +24,39 @@ import de.uniwuerzburg.info3.ofcprobe.util.Util;
  */
 public class SerialIPGenerator implements IIpGenerator {
 
-	
-	private final static int IPVERSION = 4;
-	private long lastIP = 0xfffffffeL;
-	/**
-	 * The GeneratorType
-	 */
-	private IPGeneratorType type;
-	
-	public SerialIPGenerator(){
-		this.type = IPGeneratorType.SERIAL;
-	}
-	
-	/* (non-Javadoc)
-	 * @see ofcprobe.vswitch.trafficgen.ipgen.IIpGenerator#getIpVersion()
-	 */
-	@Override
-	public int getIpVersion() {
-		return IPVERSION;
-	}
+    private final static int IPVERSION = 4;
+    private long lastIP = 0xfffffffeL;
+    /**
+     * The GeneratorType
+     */
+    private IPGeneratorType type;
 
-	/* (non-Javadoc)
-	 * @see ofcprobe.vswitch.trafficgen.ipgen.IIpGenerator#getIp()
-	 */
-	@Override
-	public byte[] getIp() {
-		if (this.lastIP == 0x00000000L) {
-			this.lastIP = 0xfffffffeL;
-		}
-		return Util.toByte((int)this.lastIP--,4);
-	}
+    public SerialIPGenerator() {
+        this.type = IPGeneratorType.SERIAL;
+    }
 
-	@Override
-	public IPGeneratorType getType() {
-		return this.type;
-	}
-	
+    /* (non-Javadoc)
+     * @see ofcprobe.vswitch.trafficgen.ipgen.IIpGenerator#getIpVersion()
+     */
+    @Override
+    public int getIpVersion() {
+        return IPVERSION;
+    }
 
-	
+    /* (non-Javadoc)
+     * @see ofcprobe.vswitch.trafficgen.ipgen.IIpGenerator#getIp()
+     */
+    @Override
+    public byte[] getIp() {
+        if (this.lastIP == 0x00000000L) {
+            this.lastIP = 0xfffffffeL;
+        }
+        return Util.toByte((int) this.lastIP--, 4);
+    }
+
+    @Override
+    public IPGeneratorType getType() {
+        return this.type;
+    }
+
 }
