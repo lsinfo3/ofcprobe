@@ -35,6 +35,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * GraphMLparser
+ *
  * @author christian rachor
  */
 public class GraphmlParser {
@@ -59,6 +61,11 @@ public class GraphmlParser {
     private String linklabel_key = "";
     private String internal_key = "";
 
+    /**
+     * Constructor
+     *
+     * @param graphml_filename the GraphML Filenam
+     */
     public GraphmlParser(String graphml_filename) {
         try {
             Document doc = new SAXBuilder().build(graphml_filename);
@@ -110,6 +117,13 @@ public class GraphmlParser {
         }
     }
 
+    /**
+     * finds Element in List by Key
+     *
+     * @param list the List
+     * @param key the Key
+     * @return the Element
+     */
     private Element findElementById(List<Element> list, String key) {
         for (Element e : list) {
             if (e.getAttributeValue("key").equals(key)) {
@@ -119,6 +133,14 @@ public class GraphmlParser {
         return null;
     }
 
+    /**
+     * Finds Node by Coordinates
+     *
+     * @param list the List
+     * @param longitude the Longitude Coordinate
+     * @param latitude the Latitude Coordinate
+     * @return the Node
+     */
     private Node findNodeByCoords(ArrayList<Node> list, double longitude, double latitude) {
         for (Node node : list) {
             if (Math.abs(node.getLongitude() - longitude) < 0.1 && Math.abs(node.getLatitude() - latitude) < 0.1) {
@@ -128,6 +150,14 @@ public class GraphmlParser {
         return null;
     }
 
+    /**
+     * Finds an Edge between source- and targetNode
+     *
+     * @param list the list
+     * @param sourcenode the source Node
+     * @param targetnode the target Node
+     * @return the Edge between the Nodes
+     */
     private Edge findEdge(ArrayList<Edge> list, Node sourcenode, Node targetnode) {
         for (Edge edge : list) {
             if ((edge.getSource().equals(sourcenode) && edge.getTarget().equals(targetnode))
@@ -138,6 +168,14 @@ public class GraphmlParser {
         return null;
     }
 
+    /**
+     * Finds Edge between Source and Target Node, identified by NodeNumber
+     *
+     * @param list the list
+     * @param source the source node number
+     * @param target the target node number
+     * @return the edge between source and target Node
+     */
     private Edge findEdge(ArrayList<Edge> list, int source, int target) {
         for (Edge edge : list) {
             if ((edge.getSource().getNumber() == source && edge.getTarget().getNumber() == target)
@@ -148,18 +186,15 @@ public class GraphmlParser {
         return null;
     }
 
+    /**
+     * Parses Nodes
+     */
     public void readNodes() {
 
         List<Element> nodeelemlist = this.graph.getChildren("node", this.ns);
         int number = 1;
         for (Element e : nodeelemlist) {
 
-//						Element internel_elem = findElementById(e.getChildren(), internal_key);
-//						System.out.println(internel_elem.getText());
-//						if (internel_elem != null && internel_elem.getText().equals("0")) {
-//							internal_nodes++;
-//							continue;
-//						}
             Element latitude_elem = findElementById(e.getChildren(), latitude_key);
             double latitude = (latitude_elem == null) ? 0 : Double.parseDouble(latitude_elem.getText());
 
@@ -191,6 +226,9 @@ public class GraphmlParser {
         }
     }
 
+    /**
+     * Parses Edges
+     */
     public void readEdges() {
         if (nodelist.isEmpty()) {
             logger.error("Read in Nodes first!");
@@ -242,10 +280,16 @@ public class GraphmlParser {
         }
     }
 
+    /**
+     * Creates Routing Table for Startnode using Dijkstra Algorithm
+     *
+     * @param startnode Startnode
+     * @return Maximum Distance between Startnode and possible TargetNode
+     */
     public int Dijkstra(Node startnode) {
         int[] distance = new int[nodelist.size()];
         int[] predecessor = new int[nodelist.size()];
-        ArrayList<Node> q = new ArrayList<Node>();
+        ArrayList<Node> q = new ArrayList<>();
         initializeDijkstra(startnode, distance, predecessor, q);
         while (!q.isEmpty()) {
             Node u = q.get(0);
@@ -266,9 +310,8 @@ public class GraphmlParser {
                     Node v = e.getSource();
                     if (q.contains(v)) {
                         distance_update(u, v, distance, predecessor);
-                    };
+                    }
                 }
-
             }
         }
         int maxD = distance[0];
@@ -282,6 +325,14 @@ public class GraphmlParser {
         return maxD;
     }
 
+    /**
+     * Updates the Distance between two Nodes
+     *
+     * @param u
+     * @param v
+     * @param distance
+     * @param predecessor
+     */
     private void distance_update(Node u, Node v, int[] distance,
             int[] predecessor) {
         int alt = distance[u.getNumber() - 1] + 1;
@@ -292,6 +343,13 @@ public class GraphmlParser {
 
     }
 
+    /**
+     *
+     * @param startnode
+     * @param distance
+     * @param predecessor
+     * @param q
+     */
     private void initializeDijkstra(Node startnode, int[] distance, int[] predecessor, ArrayList<Node> q) {
         for (Node node : nodelist) {
             distance[node.getNumber() - 1] = Integer.MAX_VALUE;
@@ -301,6 +359,10 @@ public class GraphmlParser {
         distance[startnode.getNumber() - 1] = 0;
     }
 
+    /**
+     * Writes Parsed GraphML file to OFCProbe compatible Topology.ini File
+     * Overwrites (possibly) existing File without asking
+     */
     public void writeToTopologyFile() {
         if (nodelist.isEmpty() || edgelist.isEmpty()) {
             logger.error("No nodes or edges provided.");
@@ -355,12 +417,17 @@ public class GraphmlParser {
                     logger.info("Writing Topology-File successful!");
 
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    logger.error(e.getLocalizedMessage());
                 }
             }
         }
     }
 
+    /**
+     * get the Node Count
+     *
+     * @return node Count
+     */
     public int getNodeCount() {
         return nodelist.size();
     }

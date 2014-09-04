@@ -27,6 +27,13 @@ public class Edge {
 
     private double linkspeed;
 
+    /**
+     * Constructor
+     *
+     * @param source Source Node
+     * @param target Target Node
+     * @param linkspeed Linkspeed in Mbps
+     */
     public Edge(Node source, Node target, double linkspeed) {
         super();
         this.source = source;
@@ -34,26 +41,56 @@ public class Edge {
         this.linkspeed = linkspeed;
     }
 
+    /**
+     * Gets Source Node
+     *
+     * @return source Node
+     */
     public Node getSource() {
         return source;
     }
 
+    /**
+     * Set Source Node
+     *
+     * @param source
+     */
     public void setSource(Node source) {
         this.source = source;
     }
 
+    /**
+     * Get Target Node
+     *
+     * @return the Target Node
+     */
     public Node getTarget() {
         return target;
     }
 
+    /**
+     * Set Target Node
+     *
+     * @param target the target Node
+     */
     public void setTarget(Node target) {
         this.target = target;
     }
 
+    /**
+     * Get LinkSpeed in Mbps
+     *
+     * @return the LinkSpeed in Mbps
+     */
     public double getLinkspeed() {
         return linkspeed;
     }
 
+    /**
+     * Set LinkSpeed in Mbps
+     *
+     * @param linkspeed linkspeed in Mbps
+     */
     public void setLinkspeed(double linkspeed) {
         this.linkspeed = linkspeed;
     }

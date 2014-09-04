@@ -38,7 +38,7 @@ import de.uniwuerzburg.info3.ofcprobe.vswitch.trafficgen.TrafficGen;
  * instance of 'OFConnection1_zero'
  *
  * @author Christopher Metter(christopher.metter@informatik.uni-wuerzburg.de)
- * @version 1.0.3
+ * @version 1.0.3-SNAPSHOT
  */
 public class Main {
 
