@@ -84,12 +84,15 @@ public class ARPManager {
     public List<ArpPacket> getArpsForIOFConnection(IOFConnection ofSwitch) {
         List<ArpPacket> arps = new ArrayList<>();
 
-        List<Short> freePorts = this.config.getTopology().getFreePorts(ofSwitch.getDpid());
+        List<Short> freePorts = this.config.getTopology().getFreePorts(ofSwitch.getDpid(), -1);
         for (short port : freePorts) {
             Device device = new Device(ofSwitch, port);
             String srcMac = this.hostMapper.getMacToDevice(device);
             String srcIP = this.hostMapper.getIpToDevice(device);
-            List<String> targetIPs = this.hostMapper.getTargetsForIP(srcIP);
+            if (srcMac == null || srcIP == null) {
+                continue;
+            }
+            List<String> targetIPs = this.hostMapper.getTargetsForIP(srcIP, Integer.MAX_VALUE);
             for (String targetIP : targetIPs) {
                 logger.trace("Generating ARP for targetIP={} from sourceIP={}", targetIP, srcIP);
                 byte[] payload = generateARP(srcMac, srcIP, targetIP);
@@ -110,12 +113,15 @@ public class ARPManager {
     public List<TCPPacket> getTCPSynsForIOFConnection(IOFConnection ofSwitch) {
         List<TCPPacket> tcpSyns = new ArrayList<>();
 
-        List<Short> freePorts = this.config.getTopology().getFreePorts(ofSwitch.getDpid());
+        List<Short> freePorts = this.config.getTopology().getFreePorts(ofSwitch.getDpid(), -1);
         for (short port : freePorts) {
             Device device = new Device(ofSwitch, port);
             String srcMac = this.hostMapper.getMacToDevice(device);
             String srcIP = this.hostMapper.getIpToDevice(device);
-            List<String> targetIPs = this.hostMapper.getTargetsForIP(srcIP);
+            if (srcMac == null || srcIP == null) {
+                continue;
+            }
+            List<String> targetIPs = this.hostMapper.getTargetsForIP(srcIP, config.getTrafficGenConfig().getFillThreshold());
             for (String targetIP : targetIPs) {
                 logger.trace("Generating TCPSYN for targetIP={} from sourceIP={}", targetIP, srcIP);
                 String targetMac = this.hostMapper.getMacToIp(targetIP);
@@ -144,7 +150,9 @@ public class ARPManager {
      */
     private byte[] generateARP(String srcMac, String srcIP, String targetIP) {
         byte[] arp = this.arpMaster;
-
+        if (srcMac == null) {
+            System.err.println("huhu");
+        }
         byte[] srcMacbytes = HexString.fromHexString(srcMac);
         byte[] srcIPbytes = Util.toIPv4AddressBytes(srcIP);
         byte[] targetIPbytes = Util.toIPv4AddressBytes(targetIP);

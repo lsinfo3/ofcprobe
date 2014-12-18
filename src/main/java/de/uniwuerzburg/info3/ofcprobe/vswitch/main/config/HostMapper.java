@@ -18,10 +18,8 @@ package de.uniwuerzburg.info3.ofcprobe.vswitch.main.config;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.openflow.util.HexString;
 import org.slf4j.Logger;
@@ -79,6 +77,12 @@ public class HostMapper {
      */
     private HashBiMap<String, String> macIPmap;
     /**
+     * Saves which TargetIp has been used last for this IpSrc, if only some
+     * TCPSyns are requested per Poll/Send Cyclus
+     */
+    private Map<String, Integer> ipCounter = new HashMap<>();
+
+    /**
      * Config
      */
     private Config config;
@@ -91,11 +95,13 @@ public class HostMapper {
      */
     public HostMapper(Config config, List<IOFConnection> ofSwitches) {
         this.config = config;
-        this.deviceToIP = new HashMap<Device, String>();
-        this.ipToDevice = new HashMap<String, Device>();
+        this.deviceToIP = new HashMap<>();
+        this.ipToDevice = new HashMap<>();
 
-        this.deviceToMac = new HashMap<Device, String>();
-        this.macToDevice = new HashMap<String, Device>();
+        this.deviceToMac = new HashMap<>();
+        this.macToDevice = new HashMap<>();
+
+        this.ipCounter = new HashMap<>();
 
         this.macIPmap = HashBiMap.create();
 
@@ -114,10 +120,15 @@ public class HostMapper {
      * @param ofSwitches the ofSwitches
      */
     public void setupStuff(List<IOFConnection> ofSwitches) {
-        List<Device> devices = new ArrayList<Device>();
+        List<Device> devices = new ArrayList<>();
         for (IOFConnection ofSwitch : ofSwitches) {
-            List<Short> freePorts = this.config.getTopology().getFreePorts(ofSwitch.getDpid());
-            logger.info("Switch " + String.valueOf(ofSwitch.getDpid()) + "   free Ports: " + String.valueOf(freePorts.size()));
+            List<Short> freePorts;
+            if (this.config.getTrafficGenConfig().getOnlyOneHostPerSwitch()) {
+                freePorts = this.config.getTopology().getFreePorts(ofSwitch.getDpid(), 1);
+            } else {
+                freePorts = this.config.getTopology().getFreePorts(ofSwitch.getDpid(), -1);
+            }
+            logger.trace("Switch " + String.valueOf(ofSwitch.getDpid()) + "   free Ports: " + String.valueOf(freePorts.size()));
             for (short port : freePorts) {
                 Device portSwitch = new Device(ofSwitch, port);
                 byte[] macByte = this.macGen.getMac();
@@ -135,7 +146,7 @@ public class HostMapper {
             }
         }
 
-        logger.info("#Devices: " + devices.size());
+        logger.trace("#Devices: " + devices.size());
         logger.trace("DeviceToIPMap: {}", deviceToIP.toString());
         logger.trace("IPtoDeviceMap: {}", ipToDevice.toString());
         logger.trace("DevicetoMacMap: {}", deviceToMac.toString());
@@ -207,13 +218,35 @@ public class HostMapper {
      * Gets possible ARP Targets for a IP
      *
      * @param srcIP the IP
+     * @param count number of TargetIps
      * @return the Targets
      */
-    public List<String> getTargetsForIP(String srcIP) {
-        Set<String> targetIPs = new HashSet<>(this.macIPmap.inverse().keySet());
+    public List<String> getTargetsForIP(String srcIP, int count) {
+        List<String> targetIPs = new ArrayList<>(this.macIPmap.inverse().keySet());
         targetIPs.remove(srcIP);
 
-        return new ArrayList<>(targetIPs);
+        List<String> output = new ArrayList<>(targetIPs);
+
+        if (count < targetIPs.size()) {
+            Integer counter = this.ipCounter.get(srcIP);
+            if (counter == null) {
+                counter = 0;
+            }
+
+            for (int i = 0; i < count; i++) {
+                int modIndex = (counter + i) % targetIPs.size();
+                output.add(targetIPs.get(modIndex));
+                counter++;
+            }
+
+            //store updated counter
+            this.ipCounter.put(srcIP, counter);
+
+        } else {
+            output = targetIPs;
+        }
+
+        return output;
     }
 
 }

@@ -111,6 +111,8 @@ public class Config {
 
     private boolean hasGraphml;
 
+    private String individualSwitchSettingsFile;
+
     /**
      * Constructor
      *
@@ -123,6 +125,7 @@ public class Config {
         this.switchConfig = new SwitchConfig();
         this.statConfig = new StatConfig();
         this.trafficGenConfig = new TrafficGenConfig();
+        this.individualSwitchSettingsFile = "ofSwitch.ini";
         // Check for correct filename
         if (filename.equals("")) {
             // no filename -> load Default
@@ -170,6 +173,7 @@ public class Config {
             this.hasGraphml = Boolean.parseBoolean(props.getProperty("config.hasGraphml", "false"));
             this.graphml_file = props.getProperty("config.graphml", "");
             this.checkForIndividualSettings = Boolean.parseBoolean(props.getProperty("config.checkForIndividualSwitchSettings", "false"));
+            this.individualSwitchSettingsFile = props.getProperty("config.individualFileName", "ofSwitch.ini");
 
             String controllerAddress = props.getProperty("config.controllerAddress", "127.0.0.1");
             int controllerPort = Integer.parseInt(props.getProperty("config.controllerPort", "6633"));
@@ -198,6 +202,7 @@ public class Config {
             this.trafficGenConfig.setCountPerEvent(Integer.parseInt(props.getProperty("trafficGenConfig.countPerEvent", "1")));
             this.trafficGenConfig.setStaticPayloadFlag(Boolean.parseBoolean(props.getProperty("trafficGenConfig.staticPayload", "false")));
             this.trafficGenConfig.setOnlyTopoPayloads(Boolean.parseBoolean(props.getProperty("trafficGenConfig.onlyTopologyPayloads", "false")));
+            this.trafficGenConfig.setOnlyOneHostPerSwitch(Boolean.parseBoolean(props.getProperty("trafficGenConfig.onlyOneHostPerSwitch", "false")));
             this.trafficGenConfig.setSwitchHasIndividualSetting(this.checkForIndividualSettings);
             this.trafficGenConfig.setMACGeneratorType(parseMACGenType(props.getProperty("trafficGenConfig.generatorTypeMAC", "SERIAL")));
             this.trafficGenConfig.setIPGeneratorType(parseIPGenType(props.getProperty("trafficGenConfig.generatorTypeIP", "SERIAL")));
@@ -388,6 +393,10 @@ public class Config {
      */
     public boolean checkForIndividualSettings() {
         return this.checkForIndividualSettings;
+    }
+
+    public String getIndividualSwitchSettingsFileName() {
+        return this.individualSwitchSettingsFile;
     }
 
     /**

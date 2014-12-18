@@ -164,12 +164,12 @@ public interface IOFConnection {
     public boolean hadOFComm();
 
     /**
-     * Returns the Initialization Time Delay of the Switch 0 = immediately, x =
-     * 0+x
+     * Returns the connection establishment time Delay between initialization of
+     * the Switch
      *
      * @return Time after Time in Millis!
      */
-    public long getStartDelay();
+    public long getConDelay();
 
     /**
      * Returns the Stop Time Delay of the Switch 0 = immediately, x = 0+x
@@ -177,6 +177,13 @@ public interface IOFConnection {
      * @return Time after Time in Millis!
      */
     public long getStopDelay();
+
+    /**
+     * Returns the Stop Time Delay of the Switch 0 = immediately, x = 0+x
+     *
+     * @return
+     */
+    public long getStartDelay();
 
     /**
      * The DPID

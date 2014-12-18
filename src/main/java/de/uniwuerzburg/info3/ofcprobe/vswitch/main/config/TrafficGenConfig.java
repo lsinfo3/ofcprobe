@@ -55,6 +55,7 @@ public class TrafficGenConfig {
     private Double distriPara1;
     private Double distriPara2;
     private boolean onlyTopoPayloads;
+    boolean getOnlyOneHostPerSwitch;
 
     /**
      * Constructor with default values.
@@ -75,6 +76,7 @@ public class TrafficGenConfig {
         this.distriPara1 = 0.0;
         this.distriPara2 = 0.0;
         this.onlyTopoPayloads = false;
+        this.getOnlyOneHostPerSwitch = false;
     }
 
     /**
@@ -316,5 +318,13 @@ public class TrafficGenConfig {
 
     public boolean getOnlyTopoPayloads() {
         return this.onlyTopoPayloads;
+    }
+
+    public void setOnlyOneHostPerSwitch(boolean flag) {
+        this.getOnlyOneHostPerSwitch = flag;
+    }
+
+    boolean getOnlyOneHostPerSwitch() {
+        return this.getOnlyOneHostPerSwitch;
     }
 }

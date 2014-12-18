@@ -78,6 +78,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Throwables;
+import java.nio.BufferUnderflowException;
 
 /**
  * The Connection Handler aka ofSwitch for OpenFlow Version 1.0
@@ -192,6 +193,10 @@ public class OFConnection1_zero implements IOFConnection {
      */
     private boolean hadOFComm;
     /**
+     * How long to connection Delayed establishment delayed from initialzisation
+     */
+    private long conDelay;
+    /**
      * How long to Delay start from 'normal' Switches in Millis
      */
     private long startDelay;
@@ -234,11 +239,12 @@ public class OFConnection1_zero implements IOFConnection {
         this.incomingListSwitchRunner = new ArrayList<>();
         this.crashed = false;
         this.hadOFComm = false;
+        this.conDelay = 0;
         this.startDelay = 0;
         this.stopDelay = 0;
         this.topology = null;
-        this.savedBuffIds = new HashSet<BufferID>();
-        this.savedPayloads = new HashMap<BufferID, byte[]>();
+        this.savedBuffIds = new HashSet<>();
+        this.savedPayloads = new HashMap<>();
 
         this.flowmod_handler = new OFFlowModHandler(config);
         this.stats_handler = new OFStatsHandler(config, this.flowmod_handler.getFlowTable());
@@ -274,19 +280,23 @@ public class OFConnection1_zero implements IOFConnection {
 
     private void loadIndividualSettings() {
         Properties props = new Properties();
-        String configFile = "ofSwitch.ini";
+        String configFile = config.getIndividualSwitchSettingsFileName();
 
         try {
             props.load(new BufferedInputStream(new FileInputStream(configFile)));
+            this.conDelay = Long.parseLong(props.getProperty(dpidString + ".conDelay", "0"));
             this.startDelay = Long.parseLong(props.getProperty(dpidString + ".start", "0"));
             this.stopDelay = Long.parseLong(props.getProperty(dpidString + ".stop", "0"));
+            if (this.conDelay > 0) {
+                logger.info("Switch #{} successfully loaded Individual Switch ConDelay: {}", dpidString, this.conDelay);
+            }
             if (this.startDelay > 0) {
                 logger.info("Switch #{} successfully loaded Individual Switch StartDelay: {}", dpidString, this.startDelay);
             }
             if (this.stopDelay != 0) {
                 logger.info("Switch #{} successfully loaded Individual Switch StopDelay: {}", dpidString, this.stopDelay);
             }
-            this.iat = Integer.parseInt(props.getProperty(dpidString + ".iat", Integer.toString(this.iat)));
+            this.iat = Integer.parseInt(props.getProperty(dpidString + ".iat", Integer.toString(config.getTrafficGenConfig().getIAT())));
             if (this.iat != this.config.getTrafficGenConfig().getIAT()) {
                 logger.info("Switch #{} successfully loaded Individual Switch IAT: {}", dpidString, this.iat);
             }
@@ -460,6 +470,7 @@ public class OFConnection1_zero implements IOFConnection {
     @Override
     public void send(OFMessage out) {
         packetOut(out);
+        out.computeLength();
         if (this.sendFlag && !this.crashed) {
             try {
                 if (!out.getType().equals(OFType.PACKET_IN)) //				if (this.dpidString.equals("001"))
@@ -495,7 +506,7 @@ public class OFConnection1_zero implements IOFConnection {
 
     @Override
     public void receive() {
-        if (this.ofStream != null) {
+        if (this.ofStream != null && !this.crashed) {
             try {
                 List<OFMessage> ofmessages = this.ofStream.read();
                 if (ofmessages != null) {
@@ -511,10 +522,14 @@ public class OFConnection1_zero implements IOFConnection {
                 this.runner.evaluate();
                 this.runner.report();
                 this.crashed = true;
-                logger.error("[Switch#{}]: " + Throwables.getStackTraceAsString(e), this.dpidString);
+                // If One of the Hosts(Controller or OFCProbe) is busy, Handshake is likely to fail and e.g. Floodlight will drop the Connection and so we land here
+                logger.debug("[Switch#{}]: " + Throwables.getStackTraceAsString(e), this.dpidString);
                 logger.error("[Switch#{}]: Connection has been closed by Remotehost - Has Controller Crashed?", this.dpidString);
                 logger.error("[Switch#{}]: Exiting ...", this.dpidString);
 //			System.exit(1);
+            } catch (BufferUnderflowException b) {
+                logger.debug("[Switch#{}]: " + Throwables.getStackTraceAsString(b), this.dpidString);
+                logger.error("[Switch#{}]: BufferUnderflowException! Maybe Controller tried other OpenFlowProtocl Version?", this.dpidString);
             }
         }
     }
@@ -671,8 +686,8 @@ public class OFConnection1_zero implements IOFConnection {
                 if (targetSwitches.size() > 0) {
                     for (long dpid : targetSwitches) {
                         IOFConnection ofSwitch = this.runner.getMain().getIOFConByDpid(dpid);
-                        short port = this.topology.getInPort(ofSwitch.getDpid(), this.dpid);
                         if (ofSwitch != null) {
+                            short port = this.topology.getInPort(ofSwitch.getDpid(), this.dpid);
                             logger.trace("[Switch#{}]: Switch#{} has now ARP queued on Port#{}", this.dpidString, ofSwitch.getDpid(), port);
                             ofSwitch.queuePacketIn(payload, port, true);
                         }
@@ -764,23 +779,23 @@ public class OFConnection1_zero implements IOFConnection {
     private boolean isArp4me(byte[] packet, BufferID buffId) {
         byte[] dstIP = Util.getBytes(packet, AddressPositions.ARP_IP_DST, 4);
         String dstIPString = Util.fromIPv4Address(Util.toIPv4Address(dstIP));
-        logger.debug("[Switch#{}]: ARP DST-IP: {}", this.dpidString, dstIPString);
+        logger.trace("[Switch#{}]: ARP DST-IP: {}", this.dpidString, dstIPString);
         Device target = this.config.getTopology().getHostMapping().getDeviceToIp(dstIPString);
         if (target != null) {
 
-            logger.debug("[Switch#{}]: Arp Target: {} " + this.config.getTopology().getHostMapping().getMacToDevice(target), this.dpidString, target.toString());
+            logger.trace("[Switch#{}]: Arp Target: {} " + this.config.getTopology().getHostMapping().getMacToDevice(target), this.dpidString, target.toString());
             if (target.getOfSwitch().equals(this)) {
                 if (this.feat_reply.getPortMap().keySet().contains(target.getPort())) {
                     byte[] arpReply = arpReplyBuilder(packet);
                     queuePacketIn(arpReply, target.getPort(), false);
-                    logger.debug("[Switch#{}]: ARP Reply queued!", this.dpidString);
+                    logger.trace("[Switch#{}]: ARP Reply queued!", this.dpidString);
                     return true;
                 }
             }
         } else {
             logger.warn("[Switch#{}]: isArp4me: Target null", this.dpidString);
         }
-        logger.warn("[Switch#{}]: ARP (BuffID: {};TargetDevice: {}) not 4 me: {}", this.dpidString, buffId.getBuffId(), target, dstIPString);
+        logger.trace("[Switch#{}]: ARP (BuffID: {};TargetDevice: {}) not 4 me: {}", this.dpidString, buffId.getBuffId(), target, dstIPString);
         return false;
     }
 
@@ -793,22 +808,22 @@ public class OFConnection1_zero implements IOFConnection {
     private boolean isTCPSyN4me(byte[] packet, BufferID buffId) {
         byte[] dstIP = Util.getBytes(packet, AddressPositions.IP_DST, 4);
         String dstIPString = Util.fromIPv4Address(Util.toIPv4Address(dstIP));
-        logger.debug("[Switch#{}]: TCPSyN DST-IP: {}", this.dpidString, dstIPString);
+        logger.trace("[Switch#{}]: TCPSyN DST-IP: {}", this.dpidString, dstIPString);
         Device target = this.config.getTopology().getHostMapping().getDeviceToIp(dstIPString);
         if (target != null) {
-            logger.debug("[Switch#{}]: TCPSyN Target: {} " + this.config.getTopology().getHostMapping().getMacToDevice(target), this.dpidString, target.toString());
+            logger.trace("[Switch#{}]: TCPSyN Target: {} " + this.config.getTopology().getHostMapping().getMacToDevice(target), this.dpidString, target.toString());
             if (target.getOfSwitch().equals(this)) {
                 if (this.feat_reply.getPortMap().keySet().contains(target.getPort())) {
                     byte[] TCPSyNReply = TCPSyNaCKBuilder(packet);
                     queuePacketIn(TCPSyNReply, target.getPort(), false);
-                    logger.debug("[Switch#{}]: TCP SYN/ACK queued!", this.dpidString);
+                    logger.trace("[Switch#{}]: TCP SYN/ACK queued!", this.dpidString);
                     return true;
                 }
             }
         } else {
             logger.warn("[Switch#{}]: isTCPSyN4me: Target null", this.dpidString);
         }
-        logger.warn("[Switch#{}]: TCP (BuffID: {};TargetDevice: {}) not 4 me: {}", this.dpidString, buffId.getBuffId(), target, dstIPString);
+        logger.trace("[Switch#{}]: TCP (BuffID: {};TargetDevice: {}) not 4 me: {}", this.dpidString, buffId.getBuffId(), target, dstIPString);
         return false;
     }
 
@@ -921,7 +936,7 @@ public class OFConnection1_zero implements IOFConnection {
             return false;
         }
 
-        logger.info("[Switch#{}]: OFPacketOut is LLDP!", this.dpidString);
+        logger.trace("[Switch#{}]: OFPacketOut is LLDP!", this.dpidString);
         return true;
     }
 
@@ -1036,7 +1051,7 @@ public class OFConnection1_zero implements IOFConnection {
             this.lastXid = 1;
         }
 
-        if (!this.crashed) {
+        if (!this.crashed && this.socket != null) {
             // Create newPacketIn msg dummy
             OFPacketIn newOFPacketIn = new OFPacketIn();
             newOFPacketIn.setReason(OFPacketInReason.NO_MATCH);
@@ -1054,6 +1069,7 @@ public class OFConnection1_zero implements IOFConnection {
                         newOFPacketIn.setXid(xid);
                         newOFPacketIn.setPacketData(packet.getPayload());
                         newOFPacketIn.setLengthU(OFPacketIn.MINIMUM_LENGTH + packet.getPayload().length);
+                        newOFPacketIn.setTotalLength((short) packet.getPayload().length);
 
                         if (packet.getSafeFlag()) {
                             BufferID buff = new BufferID(buffid);
@@ -1173,6 +1189,11 @@ public class OFConnection1_zero implements IOFConnection {
     }
 
     @Override
+    public long getConDelay() {
+        return this.conDelay;
+    }
+
+    @Override
     public long getStartDelay() {
         return this.startDelay;
     }
@@ -1227,11 +1248,11 @@ public class OFConnection1_zero implements IOFConnection {
         result = prime
                 * result
                 + ((incomingListSwitchRunner == null) ? 0
-                : incomingListSwitchRunner.hashCode());
+                        : incomingListSwitchRunner.hashCode());
         result = prime
                 * result
                 + ((incomingListTrafficGenerator == null) ? 0
-                : incomingListTrafficGenerator.hashCode());
+                        : incomingListTrafficGenerator.hashCode());
         result = prime * result
                 + ((lastPacketIn == null) ? 0 : lastPacketIn.hashCode());
         result = prime * result + lastXid;
@@ -1246,7 +1267,7 @@ public class OFConnection1_zero implements IOFConnection {
         result = prime * result + (sendFlag ? 1231 : 1237);
         result = prime * result + session;
         result = prime * result + (sessionStopped ? 1231 : 1237);
-        result = prime * result + (int) (startDelay ^ (startDelay >>> 32));
+        result = prime * result + (int) (conDelay ^ (conDelay >>> 32));
         result = prime * result
                 + ((statistics == null) ? 0 : statistics.hashCode());
         result = prime * result
@@ -1387,7 +1408,7 @@ public class OFConnection1_zero implements IOFConnection {
         if (sessionStopped != other.sessionStopped) {
             return false;
         }
-        if (startDelay != other.startDelay) {
+        if (conDelay != other.conDelay) {
             return false;
         }
         if (statistics == null) {

@@ -241,3 +241,7 @@ target/*.jar
 #OFCProbe
 statistics/
 !/src/main/java/de/uniwuerzburg/info3/ofcprobe/vswitch/statistics/
+dev_temp/
+topos/
+topology.ini
+MyLog.log

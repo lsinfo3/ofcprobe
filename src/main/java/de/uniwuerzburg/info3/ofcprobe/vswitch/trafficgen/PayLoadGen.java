@@ -30,6 +30,7 @@ import de.uniwuerzburg.info3.ofcprobe.vswitch.trafficgen.macgen.SerialMacGen;
 import de.uniwuerzburg.info3.ofcprobe.vswitch.trafficgen.portgen.IPortGen;
 import de.uniwuerzburg.info3.ofcprobe.vswitch.trafficgen.portgen.RandomPortGen;
 import de.uniwuerzburg.info3.ofcprobe.vswitch.trafficgen.portgen.SerialPortGen;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This Class generates Payload. atm only random TCP Syns supported
@@ -38,6 +39,8 @@ import de.uniwuerzburg.info3.ofcprobe.vswitch.trafficgen.portgen.SerialPortGen;
  *
  */
 public class PayLoadGen {
+
+    AtomicInteger nextIpId;
 
     /**
      * Connected IPGenerator
@@ -60,6 +63,7 @@ public class PayLoadGen {
      * Constructor, initializes the Generators
      */
     public PayLoadGen(Config config) {
+        this.nextIpId = new AtomicInteger();
 
         switch (config.getTrafficGenConfig().getMacGenType()) {
             case RANDOM:
@@ -96,7 +100,6 @@ public class PayLoadGen {
                 this.portGen = new SerialPortGen();
                 break;
         }
-
         this.tcpSynMaster = preGenerateTcpSyn();
     }
 
@@ -114,6 +117,7 @@ public class PayLoadGen {
 
         // Inserting IP Header Fields
         byte[] ipverServiceLengthIdentiFlagsTTLProtocol = Util.toByteArray("450000345ad340008006"); // IP Version + Services + TotalIPHeaderLength + Identification + IPFlags + TTL + Protocol(TCP)
+        //5ad3 = IP ID
         packet = Util.insertByteArray(packet, ipverServiceLengthIdentiFlagsTTLProtocol, 14);
 
         // Inserting TCP Header Fields
@@ -205,11 +209,37 @@ public class PayLoadGen {
     private byte[] buildIpHeader(byte[] packet, byte[] ipSrc, byte[] ipDst) {
         packet = Util.insertByteArray(packet, ipSrc, 26);
         packet = Util.insertByteArray(packet, ipDst, 30);
+        packet = insertIpId(packet, this.nextIpId.getAndIncrement());
 
         long checksum = checksum(packet, 20, 14);
         Util.insertLong(packet, checksum, 24, 2);
 
         return packet;
+    }
+
+    public byte[] insertIpId(byte[] packet, int ipId) {
+        if (ipId > 65535) {
+            this.nextIpId = new AtomicInteger();
+            ipId = this.nextIpId.getAndIncrement();
+        }
+        String hexString = Integer.toHexString(ipId);
+        if ((hexString.length() % 2) != 0) {
+            hexString = "0" + hexString;
+        }
+        byte[] ipIdbyte = hexStringToByteArray(hexString);
+        packet = Util.insertByteArray(packet, ipIdbyte, 18);
+
+        return packet;
+    }
+
+    public static byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                    + Character.digit(s.charAt(i + 1), 16));
+        }
+        return data;
     }
 
     /**
@@ -246,5 +276,4 @@ public class PayLoadGen {
 
         return (~((sum & 0xFFFF) + (sum >> 16))) & 0xFFFF;
     }
-
 }

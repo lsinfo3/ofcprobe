@@ -108,7 +108,7 @@ public class Topology {
                         portOfSwitch2 = Integer.parseInt(rightOfSwitch[1]);
                     }
 
-					// set Link
+                    // set Link
                     setLink(ofSwitch1, portOfSwitch1, ofSwitch2, portOfSwitch2);
                 }
 
@@ -287,9 +287,10 @@ public class Topology {
      * Port of Switch with dpid
      *
      * @param dpid the switch with dpid
+     * @param count maximum number of hosts per switch
      * @return List of Portnumbers
      */
-    public List<Short> getFreePorts(long dpid) {
+    public List<Short> getFreePorts(long dpid, int count) {
         List<Short> output = new ArrayList<>();
         int ofSwitch = (int) dpid;
         if (ofSwitch <= this.connections.length) {
@@ -299,6 +300,9 @@ public class Topology {
                     output.add((short) (i + 1));
                 }
             }
+        }
+        if (count != -1 && output.size() > count) {
+            output = output.subList(0, count);
         }
         return output;
     }

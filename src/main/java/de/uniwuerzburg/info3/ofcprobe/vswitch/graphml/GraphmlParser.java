@@ -19,6 +19,8 @@ package de.uniwuerzburg.info3.ofcprobe.vswitch.graphml;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -371,7 +373,7 @@ public class GraphmlParser {
         int distance = Integer.MAX_VALUE;
         Node startnode = null;
         for (Node node : nodelist) {
-            if (Dijkstra(node) < distance) {
+            if (Dijkstra(node) <= distance) {
                 distance = Dijkstra(node);
                 startnode = node;
             }
@@ -405,8 +407,10 @@ public class GraphmlParser {
                         + edge.getTarget().getNumber() + ":" + (ports[edge.getTarget().getNumber() - 1]++));
                 fw.append(System.getProperty("line.separator"));
             }
+            NumberFormat dpidFormatter = new DecimalFormat("#000");
             for (int i = 0; i < nodelist.size(); i++) {
-                logger.info("Switch: " + nodelist.get(i).getName() + " " + nodelist.get(i).getIds() + " " + nodelist.get(i).getNumber() + " Conntections: " + (ports[i] - 1));
+                String dpid = dpidFormatter.format(nodelist.get(i).getNumber());
+                logger.info("Switch#{} \"{}\" (Nodeid:{}) has {} connections", dpid, nodelist.get(i).getName(), nodelist.get(i).getIds(), (ports[i] - 1));
             }
         } catch (IOException e) {
             logger.error("Exception during Creation of topology file");

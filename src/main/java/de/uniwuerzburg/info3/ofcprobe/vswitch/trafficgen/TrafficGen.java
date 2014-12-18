@@ -136,8 +136,8 @@ public class TrafficGen implements Runnable {
 
         }
         this.payloadGen = new PayLoadGen(config);
-        this.switches = new ArrayList<IOFConnection>();
-        this.connectedSwitches = new ArrayList<IOFConnection>();
+        this.switches = new ArrayList<>();
+        this.connectedSwitches = new ArrayList<>();
         this.switchstarters = new HashMap<OFSwitchRunner, List<IOFConnection>>();
         this.tcpsyn = this.payloadGen.generateTCPSyn();
         this.staticPacket = config.getTrafficGenConfig().getStaticPayloadFlag();
@@ -192,11 +192,11 @@ public class TrafficGen implements Runnable {
         Date startSim = new Date(now.getTime() + 2 * config.getStartDelay());
 
         // Schedule End of Simulation: Now + 2*StartDelay + SimTime + SafetyBuffer
-        this.endSim = new Date(startSim.getTime() + config.getSimTime() + config.getStopDelay()); // XXX last one really?
+        this.endSim = new Date(startSim.getTime() + config.getSimTime() + config.getStopDelay());
         generateNext(this.endSim, EventType.GENERATION_END);
 
         for (IOFConnection ofSwitch : this.switches) {
-            long connectDelay = ofSwitch.getStartDelay();
+            long connectDelay = ofSwitch.getConDelay();
             IOFEvent connectEvent = generateEvent(ofSwitch, EventType.OFSWITCH_CONNECT_EVENT);
             Date connectDate = new Date(now.getTime() + connectDelay);
 
@@ -213,6 +213,7 @@ public class TrafficGen implements Runnable {
         }
 
         if (this.config.getTrafficGenConfig().getArpFlag()) {
+            // (trafficGenConfig.arpEnabled = true)
             this.arpGen = new ARPManager(config, this.switches);
             this.payloadGen = null;
         }
@@ -228,7 +229,7 @@ public class TrafficGen implements Runnable {
     private void queueEvent(Date targetDate, IOFEvent event) {
         List<IOFEvent> eventList = eventQueue.get(targetDate);
         if (eventList == null) {
-            eventList = new ArrayList<IOFEvent>();
+            eventList = new ArrayList<>();
         }
         eventList.add(event);
         eventQueue.put(targetDate, eventList);
@@ -268,7 +269,7 @@ public class TrafficGen implements Runnable {
 
             List<IOFEvent> eventList = eventQueue.get(target);
             if (eventList == null) {
-                eventList = new ArrayList<IOFEvent>();
+                eventList = new ArrayList<>();
             }
 
             eventList.add(generateEvent(ofSwitch, eventType));
@@ -352,6 +353,7 @@ public class TrafficGen implements Runnable {
                     long stuff = sleepingTime(now, currentEventEntry.getKey());
                     Thread.sleep(stuff);
                 } catch (InterruptedException e) {
+                    logger.error(e.getLocalizedMessage());
                     Thread.currentThread().interrupt();
 
                 }
@@ -382,7 +384,7 @@ public class TrafficGen implements Runnable {
 
                             // Schedule queueSwitching Event
                             IOFEvent queueSwitch = generateEvent(event.getCon(), EventType.OFSWITCH_QUEUESWITCH_EVENT);
-                            queueEvent(new Date(eventTime.getTime() + config.getStartDelay()), queueSwitch);
+                            queueEvent(new Date(eventTime.getTime() + config.getStartDelay() + event.getCon().getStartDelay()), queueSwitch);
 
                             break;
                         case OFSWITCH_QUEUESWITCH_EVENT:
@@ -454,7 +456,7 @@ public class TrafficGen implements Runnable {
                                     diff = 0;
                                 }
                                 // Create a List of Payloads
-                                List<byte[]> payloads = new ArrayList<byte[]>(diff);
+                                List<byte[]> payloads = new ArrayList<>(diff);
                                 // Check wether this ofSwitch will get PCAP payloads
                                 if (this.pcapLoaderMap.containsKey(ofSwitch.getDpid())) {
                                     logger.trace("Taking payload from pcap for {}", ofSwitch.toString());
