@@ -923,6 +923,8 @@ public class OFConnection1_zero implements IOFConnection {
         // DST MAC reserved for LLDP
         String LLDP_STANDARD_DST_MAC_STRING = "01:80:c2:00:00:0e";
 
+        System.out.println("huhu duhu: " + dstMacString + "; " + portMacString);
+
         // DST MAC has to be LLDP_MAC
         if (!dstMacString.equals(LLDP_STANDARD_DST_MAC_STRING)) {
             // Wrong destination mac (!= lldp mac)
