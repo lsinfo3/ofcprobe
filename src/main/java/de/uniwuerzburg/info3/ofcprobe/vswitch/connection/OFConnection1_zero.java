@@ -79,6 +79,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Throwables;
 import java.nio.BufferUnderflowException;
+import java.nio.ByteBuffer;
+import java.util.logging.Level;
 
 /**
  * The Connection Handler aka ofSwitch for OpenFlow Version 1.0
@@ -224,6 +226,7 @@ public class OFConnection1_zero implements IOFConnection {
     private double iatDistriPara1;
 
     private double iatDistriPara2;
+    private boolean onosControlled;
 
     /**
      * Constructor.
@@ -266,6 +269,7 @@ public class OFConnection1_zero implements IOFConnection {
         this.pcapFileName = "notSet!";
         this.iatDistri = "none!";
         this.queueLengthMonitor = null;
+        this.onosControlled = this.config.getOnosControlled();
         if (config.hasTopology()) {
             this.topology = config.getTopology();
         }
@@ -598,7 +602,9 @@ public class OFConnection1_zero implements IOFConnection {
                 this.hadOFComm = true;
                 OFHello hello = new OFHello();
                 hello.setXid(incoming.getXid());
-                send(hello);
+                if (!onosControlled) {
+                    send(hello); //FIXME onos reacts alergic to wrong msgs (HELLO) in wrong connection states --> onos kills connection
+                }
                 break;
             case PACKET_IN:
                 break;

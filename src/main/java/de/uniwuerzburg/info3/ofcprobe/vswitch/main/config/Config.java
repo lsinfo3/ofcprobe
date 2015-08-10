@@ -113,6 +113,8 @@ public class Config {
 
     private String individualSwitchSettingsFile;
 
+    private boolean isOnosControlled;
+
     /**
      * Constructor
      *
@@ -174,6 +176,7 @@ public class Config {
             this.graphml_file = props.getProperty("config.graphml", "");
             this.checkForIndividualSettings = Boolean.parseBoolean(props.getProperty("config.checkForIndividualSwitchSettings", "false"));
             this.individualSwitchSettingsFile = props.getProperty("config.individualFileName", "ofSwitch.ini");
+            this.isOnosControlled = Boolean.parseBoolean(props.getProperty("config.onosControlled", "false"));
 
             String controllerAddress = props.getProperty("config.controllerAddress", "127.0.0.1");
             int controllerPort = Integer.parseInt(props.getProperty("config.controllerPort", "6633"));
@@ -495,5 +498,9 @@ public class Config {
         output += this.trafficGenConfig + "\n";
         output += this.topology.toString() + "\n";
         return output;
+    }
+
+    public boolean getOnosControlled() {
+        return this.isOnosControlled;
     }
 }
