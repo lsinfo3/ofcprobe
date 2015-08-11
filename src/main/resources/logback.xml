@@ -25,7 +25,7 @@
         </encoder>
     </appender>
 
-    <logger name="de.uniwuerzburg.info3.ofcprobe.vswitch" level="TRACE" additivity="false">
+    <logger name="de.uniwuerzburg.info3.ofcprobe.vswitch" level="INFO" additivity="false">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE" />
     </logger>
@@ -35,7 +35,7 @@
         <appender-ref ref="FILE" />
     </logger>
 
-    <logger name="de.uniwuerzburg.info3.ofcprobe.vswitch.connection" level="TRACE" additivity="false">
+    <logger name="de.uniwuerzburg.info3.ofcprobe.vswitch.connection" level="INFO" additivity="false">
         <appender-ref ref="SWITCH-STDOUT" />
         <appender-ref ref="FILE" />
     </logger>
