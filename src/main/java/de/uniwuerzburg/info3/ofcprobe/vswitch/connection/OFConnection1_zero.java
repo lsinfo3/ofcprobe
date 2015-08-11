@@ -888,11 +888,10 @@ public class OFConnection1_zero implements IOFConnection {
         short ofp_none = OFPort.OFPP_NONE.getValue();
 
         logger.trace("[Switch#{}]: Checking for LLDP! " + ofp_none + " " + po.getInPort(), this.dpidString);
-        // PO.InPort Check
-        if (po.getInPort() != ofp_none) {
-            return false;
-        }
-
+        // PO.InPort Check TODO: ONOS DOES THIS DIFFERENTLY
+//        if (po.getInPort() != ofp_none) {
+//            return false;
+//        }
         // Check if OFPhysicalPort is local
         OFPhysicalPort localPort = getLocalPort(po);
         if (localPort == null) {
@@ -921,22 +920,23 @@ public class OFConnection1_zero implements IOFConnection {
         String portMacString = HexString.toHexString(portMac);
 
         // DST MAC reserved for LLDP
-        String LLDP_STANDARD_DST_MAC_STRING = "01:80:c2:00:00:0e";
-
-        System.out.println("huhu duhu: " + dstMacString + "; " + portMacString);
+        List<String> lldp_macs = new ArrayList<>();
+        lldp_macs.add("01:80:c2:00:00:0e"); //LLDP_Multicast
+        lldp_macs.add("01:80:c2:00:00:03");
+        lldp_macs.add("01:80:c2:00:00:00");
+        lldp_macs.add("01:23:20:00:00:01"); //LLDAP Nicira
 
         // DST MAC has to be LLDP_MAC
-        if (!dstMacString.equals(LLDP_STANDARD_DST_MAC_STRING)) {
+        if (!lldp_macs.contains(dstMacString)) {
             // Wrong destination mac (!= lldp mac)
             return false;
         }
 
-        // SRC MAC has to be MAC of localPort
-        if (!srcMacString.equals(portMacString)) {
-            // Wrong src mac (!= lldp_port mac)
-            return false;
-        }
-
+        // SRC MAC has to be MAC of localPort TODO: ONOS DOES THIS DIFFERENTLY
+//        if (!srcMacString.equals(portMacString)) {
+//            // Wrong src mac (!= lldp_port mac)
+//            return false;
+//        }
         // Ethertype has to be set to "0x88cc"
         String lldpTypeString = "88cc";
         byte[] etherType = Util.getBytes(data, AddressPositions.ETHER_TYPE, 2);

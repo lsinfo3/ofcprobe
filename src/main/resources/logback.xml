@@ -40,7 +40,7 @@
         <appender-ref ref="FILE" />
     </logger>
 
-    <logger name="de.uniwuerzburg.info3.ofcprobe.vswitch.connection.OFStatsHandler" level="TRACE" additivity="false">
+    <logger name="de.uniwuerzburg.info3.ofcprobe.vswitch.connection.OFStatsHandler" level="INFO" additivity="false">
         <appender-ref ref="SWITCH-STDOUT" />
         <appender-ref ref="FILE" />
     </logger>

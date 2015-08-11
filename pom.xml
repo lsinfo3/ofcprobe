@@ -75,6 +75,7 @@
                         </manifest>
                     </archive>
                 </configuration>
+                <version>2.6</version>
             </plugin>
 
             <plugin>
