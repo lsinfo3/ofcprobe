@@ -508,11 +508,29 @@ public class OFConnection1_zero implements IOFConnection {
 
     }
 
+    boolean flag = false;
+
     @Override
     public void receive() {
         if (this.ofStream != null && !this.crashed) {
             try {
-                List<OFMessage> ofmessages = this.ofStream.read();
+                List<OFMessage> ofmessages = new ArrayList<>();
+                if (!flag && !config.getOnosControlled()) {
+                    ByteBuffer dsts = ByteBuffer
+                            .allocateDirect(OFMessageAsyncStream.defaultBufferSize);
+                    this.socket.read(dsts);
+                    dsts.flip();
+                    if (dsts.get() != 0x01) {
+                        logger.trace("Controller sent Message not being OF1.0! Sending him OFHello 1.0 back!");
+                        send(new OFHello().setLengthU(OFMessage.MINIMUM_LENGTH));
+                    } else {
+                        ofmessages = new BasicFactory().parseMessages(dsts);
+                        logger.trace(Integer.toString(ofmessages.size()));
+                    }
+                    flag = true;
+                } else {
+                    ofmessages = this.ofStream.read();
+                }
                 if (ofmessages != null) {
                     if (!ofmessages.isEmpty()) {
                         Iterator<OFMessage> ofiter = ofmessages.iterator();

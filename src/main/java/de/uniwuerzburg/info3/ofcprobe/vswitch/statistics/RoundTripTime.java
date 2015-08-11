@@ -74,8 +74,8 @@ public class RoundTripTime implements IStatistics {
      * Constructor
      */
     public RoundTripTime(Config config) {
-        this.rtt = new ArrayList<Long>();
-        this.packIns = new HashMap<Integer, Date>();
+        this.rtt = new ArrayList<>();
+        this.packIns = new HashMap<>();
         this.running = false;
         NumberFormat formatter = new DecimalFormat("#000");
         this.dpid = formatter.format(config.getSwitchConfig().getDpid());
@@ -180,7 +180,7 @@ public class RoundTripTime implements IStatistics {
                 break;
             case PACKET_IN:
                 OFPacketIn packIn = (OFPacketIn) out;
-                this.packIns.put(packIn.getBufferId(), new Date());
+                this.packIns.put(packIn.getXid(), new Date());
                 break;
             case PACKET_OUT:
                 break;
@@ -217,7 +217,7 @@ public class RoundTripTime implements IStatistics {
     private void packOut(OFPacketOut packOut) {
         for (Iterator<Map.Entry<Integer, Date>> i = this.packIns.entrySet().iterator(); i.hasNext();) {
             Map.Entry<Integer, Date> entry = i.next();
-            if (entry.getKey() == packOut.getBufferId()) {
+            if (entry.getKey() == packOut.getXid()) {
                 this.rtt.add(new Date().getTime() - entry.getValue().getTime());
                 logger.trace("RoundTripTime of this Packet: {}ms", this.rtt.get(this.rtt.size() - 1));
                 i.remove();
