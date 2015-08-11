@@ -103,7 +103,7 @@ public class OFStatsHandler {
         // Important to set StatisticType!!!!-> else Crash!
         switch (incomingStatType) {
             case AGGREGATE:
-                logger.trace("[Switch#{}]: NEW IMPLEMENTED STAT_REQUEST: {}", this.dpid, incomingStatType.toString());
+                logger.trace("[Switch#{}]: IMPLEMENTED STAT_REQUEST: {}", this.dpid, incomingStatType.toString());
 
                 stat_reply.setStatisticType(OFStatisticsType.AGGREGATE);
 
@@ -122,7 +122,7 @@ public class OFStatsHandler {
 
                 break;
             case FLOW:
-                logger.trace("[Switch#{}]: NEW IMPLEMENTED STAT_REQUEST: {}", this.dpid, incomingStatType.toString());
+                logger.trace("[Switch#{}]: IMPLEMENTED STAT_REQUEST: {}", this.dpid, incomingStatType.toString());
                 stat_reply.setStatisticType(OFStatisticsType.FLOW);
 
                 if (!incomingStat.getStatistics().isEmpty()) {
@@ -149,7 +149,7 @@ public class OFStatsHandler {
 
                 break;
             case TABLE:
-                logger.trace("[Switch#{}]: NEW IMPLEMENTED STAT_REQUEST: {}", this.dpid, incomingStatType.toString());
+                logger.trace("[Switch#{}]: IMPLEMENTED STAT_REQUEST: {}", this.dpid, incomingStatType.toString());
                 stat_reply.setStatisticType(OFStatisticsType.TABLE);
 
                 List<OFTableStatistics> tableStats = tableStatBuilder();
@@ -332,7 +332,7 @@ public class OFStatsHandler {
         descStat.setHardwareDescription("OFCProbe Vswitch");
         descStat.setManufacturerDescription("Lehrstuhl fuer Informatik III, University of Wuerzburg");
         descStat.setSerialNumber(String.valueOf(this.dpid));
-        descStat.setSoftwareDescription("1.0.3");
+        descStat.setSoftwareDescription("1.0.4-SNAP");
 
         return descStat;
     }
