@@ -59,7 +59,7 @@ public class HostMapper {
     /**
      * MAP Device->IP
      */
-    private Map<Device, String> deviceToIP;
+    private Map<Device, List<String>> deviceToIP;
     /**
      * MAP IP->Device
      */
@@ -67,7 +67,7 @@ public class HostMapper {
     /**
      * MAP Device->MAC
      */
-    private Map<Device, String> deviceToMac;
+    private Map<Device, List<String>> deviceToMac;
     /**
      * MAP MAC->Device
      */
@@ -129,20 +129,37 @@ public class HostMapper {
                 freePorts = this.config.getTopology().getFreePorts(ofSwitch.getDpid(), -1);
             }
             logger.trace("Switch " + String.valueOf(ofSwitch.getDpid()) + "   free Ports: " + String.valueOf(freePorts.size()));
-            for (short port : freePorts) {
-                Device portSwitch = new Device(ofSwitch, port);
-                byte[] macByte = this.macGen.getMac();
-                String mac = HexString.toHexString(macByte);
-                byte[] ipByte = this.ipGen.getIp();
-                String ip = Util.fromIPv4Address(Util.toIPv4Address((ipByte)));
-                devices.add(portSwitch);
-                this.deviceToMac.put(portSwitch, mac);
-                this.macToDevice.put(mac, portSwitch);
 
-                this.deviceToIP.put(portSwitch, ip);
-                this.ipToDevice.put(ip, portSwitch);
+            int initializedHosts = 0;
+            while (initializedHosts < this.config.getTrafficGenConfig().getHostsPerSwitch()) {
+                for (short port : freePorts) {
+                    Device portSwitch = new Device(ofSwitch, port);
+                    byte[] macByte = this.macGen.getMac();
+                    String mac = HexString.toHexString(macByte);
+                    byte[] ipByte = this.ipGen.getIp();
+                    String ip = Util.fromIPv4Address(Util.toIPv4Address((ipByte)));
+                    devices.add(portSwitch);
 
-                this.macIPmap.put(mac, ip);
+                    List<String> macs = this.deviceToMac.get(portSwitch);
+                    if (macs == null) {
+                        macs = new ArrayList<>();
+                    }
+                    macs.add(mac);
+                    this.deviceToMac.put(portSwitch, macs);
+                    this.macToDevice.put(mac, portSwitch);
+
+                    List<String> ips = this.deviceToIP.get(portSwitch);
+                    if (ips == null) {
+                        ips = new ArrayList<>();
+                    }
+                    ips.add(ip);
+                    this.deviceToIP.put(portSwitch, ips);
+                    this.ipToDevice.put(ip, portSwitch);
+
+                    this.macIPmap.put(mac, ip);
+                    initializedHosts += freePorts.size();
+                }
+
             }
         }
 
@@ -160,7 +177,7 @@ public class HostMapper {
      * @param device the Device
      * @return the IP
      */
-    public String getIpToDevice(Device device) {
+    public List<String> getIpsToDevice(Device device) {
         return this.deviceToIP.get(device);
     }
 
@@ -180,7 +197,7 @@ public class HostMapper {
      * @param device the Device
      * @return the MAC
      */
-    public String getMacToDevice(Device device) {
+    public List<String> getMacsToDevice(Device device) {
         return this.deviceToMac.get(device);
     }
 

@@ -783,7 +783,7 @@ public class OFConnection1_zero implements IOFConnection {
         Device target = this.config.getTopology().getHostMapping().getDeviceToIp(dstIPString);
         if (target != null) {
 
-            logger.trace("[Switch#{}]: Arp Target: {} " + this.config.getTopology().getHostMapping().getMacToDevice(target), this.dpidString, target.toString());
+            logger.trace("[Switch#{}]: Arp Target: {} " + this.config.getTopology().getHostMapping().getMacsToDevice(target), this.dpidString, target.toString());
             if (target.getOfSwitch().equals(this)) {
                 if (this.feat_reply.getPortMap().keySet().contains(target.getPort())) {
                     byte[] arpReply = arpReplyBuilder(packet);
@@ -811,7 +811,7 @@ public class OFConnection1_zero implements IOFConnection {
         logger.trace("[Switch#{}]: TCPSyN DST-IP: {}", this.dpidString, dstIPString);
         Device target = this.config.getTopology().getHostMapping().getDeviceToIp(dstIPString);
         if (target != null) {
-            logger.trace("[Switch#{}]: TCPSyN Target: {} " + this.config.getTopology().getHostMapping().getMacToDevice(target), this.dpidString, target.toString());
+            logger.trace("[Switch#{}]: TCPSyN Target: {} " + this.config.getTopology().getHostMapping().getMacsToDevice(target), this.dpidString, target.toString());
             if (target.getOfSwitch().equals(this)) {
                 if (this.feat_reply.getPortMap().keySet().contains(target.getPort())) {
                     byte[] TCPSyNReply = TCPSyNaCKBuilder(packet);

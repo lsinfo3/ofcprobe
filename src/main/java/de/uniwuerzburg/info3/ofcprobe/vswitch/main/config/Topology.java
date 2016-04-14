@@ -283,7 +283,7 @@ public class Topology {
     }
 
     /**
-     * Gets the List of Portnumbers of Ports which are not connected toanother
+     * Gets the List of Portnumbers of Ports which are not connected to another
      * Port of Switch with dpid
      *
      * @param dpid the switch with dpid

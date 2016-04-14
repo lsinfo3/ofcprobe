@@ -203,6 +203,7 @@ public class Config {
             this.trafficGenConfig.setStaticPayloadFlag(Boolean.parseBoolean(props.getProperty("trafficGenConfig.staticPayload", "false")));
             this.trafficGenConfig.setOnlyTopoPayloads(Boolean.parseBoolean(props.getProperty("trafficGenConfig.onlyTopologyPayloads", "false")));
             this.trafficGenConfig.setOnlyOneHostPerSwitch(Boolean.parseBoolean(props.getProperty("trafficGenConfig.onlyOneHostPerSwitch", "false")));
+            this.trafficGenConfig.setHostsPerSwitch(Integer.parseInt(props.getProperty("trafficGenConfig.hostsPerSwitch", "-1")));
             this.trafficGenConfig.setSwitchHasIndividualSetting(this.checkForIndividualSettings);
             this.trafficGenConfig.setMACGeneratorType(parseMACGenType(props.getProperty("trafficGenConfig.generatorTypeMAC", "SERIAL")));
             this.trafficGenConfig.setIPGeneratorType(parseIPGenType(props.getProperty("trafficGenConfig.generatorTypeIP", "SERIAL")));
@@ -322,6 +323,7 @@ public class Config {
         this.trafficGenConfig.setPortGeneratorType(PortGeneratorType.SERIAL);
         this.trafficGenConfig.setIatType(0);
         this.trafficGenConfig.setOnlyTopoPayloads(false);
+        this.trafficGenConfig.setHostsPerSwitch(-1);
 
         List<String> stats = new ArrayList<>();
         stats.add("PPS");

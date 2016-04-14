@@ -87,17 +87,20 @@ public class ARPManager {
         List<Short> freePorts = this.config.getTopology().getFreePorts(ofSwitch.getDpid(), -1);
         for (short port : freePorts) {
             Device device = new Device(ofSwitch, port);
-            String srcMac = this.hostMapper.getMacToDevice(device);
-            String srcIP = this.hostMapper.getIpToDevice(device);
-            if (srcMac == null || srcIP == null) {
+            List<String> srcMacs = this.hostMapper.getMacsToDevice(device);
+            List<String> srcIPs = this.hostMapper.getIpsToDevice(device);
+            if (srcMacs == null || srcIPs == null) {
                 continue;
             }
-            List<String> targetIPs = this.hostMapper.getTargetsForIP(srcIP, Integer.MAX_VALUE);
-            for (String targetIP : targetIPs) {
-                logger.trace("Generating ARP for targetIP={} from sourceIP={}", targetIP, srcIP);
-                byte[] payload = generateARP(srcMac, srcIP, targetIP);
-                ArpPacket arp = new ArpPacket(port, payload);
-                arps.add(arp);
+            for (String srcIP : srcIPs) {
+                String srcMac = this.hostMapper.getMacToIp(srcIP);
+                List<String> targetIPs = this.hostMapper.getTargetsForIP(srcIP, Integer.MAX_VALUE);
+                for (String targetIP : targetIPs) {
+                    logger.trace("Generating ARP for targetIP={} from sourceIP={}", targetIP, srcIPs);
+                    byte[] payload = generateARP(srcMac, srcIP, targetIP);
+                    ArpPacket arp = new ArpPacket(port, payload);
+                    arps.add(arp);
+                }
             }
         }
 
@@ -116,18 +119,21 @@ public class ARPManager {
         List<Short> freePorts = this.config.getTopology().getFreePorts(ofSwitch.getDpid(), -1);
         for (short port : freePorts) {
             Device device = new Device(ofSwitch, port);
-            String srcMac = this.hostMapper.getMacToDevice(device);
-            String srcIP = this.hostMapper.getIpToDevice(device);
-            if (srcMac == null || srcIP == null) {
+            List<String> srcMacs = this.hostMapper.getMacsToDevice(device);
+            List<String> srcIPs = this.hostMapper.getIpsToDevice(device);
+            if (srcMacs == null || srcIPs == null) {
                 continue;
             }
-            List<String> targetIPs = this.hostMapper.getTargetsForIP(srcIP, config.getTrafficGenConfig().getFillThreshold());
-            for (String targetIP : targetIPs) {
-                logger.trace("Generating TCPSYN for targetIP={} from sourceIP={}", targetIP, srcIP);
-                String targetMac = this.hostMapper.getMacToIp(targetIP);
-                byte[] payload = this.payloadGen.generateCustomTCPSynfromStrings(srcMac, targetMac, srcIP, targetIP);
-                TCPPacket tcpSyn = new TCPPacket(port, payload);
-                tcpSyns.add(tcpSyn);
+            for (String srcIP : srcIPs) {
+                String srcMac = this.hostMapper.getMacToIp(srcIP);
+                List<String> targetIPs = this.hostMapper.getTargetsForIP(srcIP, config.getTrafficGenConfig().getFillThreshold());
+                for (String targetIP : targetIPs) {
+                    logger.trace("Generating TCPSYN for targetIP={} from sourceIP={}", targetIP, srcIP);
+                    String targetMac = this.hostMapper.getMacToIp(targetIP);
+                    byte[] payload = this.payloadGen.generateCustomTCPSynfromStrings(srcMac, targetMac, srcIP, targetIP);
+                    TCPPacket tcpSyn = new TCPPacket(port, payload);
+                    tcpSyns.add(tcpSyn);
+                }
             }
         }
 
