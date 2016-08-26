@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.uni-wuerzburg.info3</groupId>
     <artifactId>ofcprobe</artifactId>
-    <version>1.0.4-SNAPSHOT</version>
+    <version>1.0.5-BETA-SNAPSHOT</version>
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
@@ -60,7 +60,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
-        <netbeans.hint.license>gpl30</netbeans.hint.license>
     </properties>
 
     <build>
@@ -79,7 +78,7 @@
             </plugin>
 
             <plugin>
-                <groupId>org.dstovall</groupId>
+                <groupId>com.jolira</groupId>
                 <artifactId>onejar-maven-plugin</artifactId>
                 <version>1.4.4</version>
                 <executions>
