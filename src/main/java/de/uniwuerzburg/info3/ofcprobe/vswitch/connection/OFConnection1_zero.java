@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2016 christopher.metter.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -941,7 +941,8 @@ public class OFConnection1_zero implements IOFConnection {
         lldp_macs.add("01:80:c2:00:00:0e"); //LLDP_Multicast
         lldp_macs.add("01:80:c2:00:00:03");
         lldp_macs.add("01:80:c2:00:00:00");
-        lldp_macs.add("01:23:20:00:00:01"); //LLDAP Nicira
+        lldp_macs.add("01:23:20:00:00:01"); //LLDP Nicira
+        lldp_macs.add("a5:23:05:00:00:01"); //LLDP ONOS
 
         // DST MAC has to be LLDP_MAC
         if (!lldp_macs.contains(dstMacString)) {
